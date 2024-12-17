@@ -1,0 +1,26 @@
+{
+  "name": "opti-cli",
+  "version": "1.0.0",
+  "main": "index.mjs",
+  "type": "module",
+  "scripts": {
+    "generate:command": "node ./scripts/generate/command.mjs",
+    "cli:install": "npm install -g . ",
+    "cli:uninstall": ""
+  },
+  "bin": {
+    "opti": "./index.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@inquirer/prompts": "^7.2.0",
+    "app-root-path": "^3.1.0",
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  }
+}
