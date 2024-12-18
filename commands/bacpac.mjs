@@ -21,7 +21,6 @@ program
     const env = JSON.parse(dockerCompose.match(/#\[bacpac\](.*?)\n/)[1]);
     const command = sqlpackageCommandline(env);
 
-    log.success('Printed command to terminal!');
     log.info(
       'Open the folder where you bacpac file is located and run the following command:'
     );

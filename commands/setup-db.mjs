@@ -1,7 +1,8 @@
-import { getFile, listDir, writeFile } from '../helpers/files.mjs';
+import { listDir, searchFileRecursive, writeFile } from '../helpers/files.mjs';
 import program from '../index.mjs';
 import { select, confirm } from '@inquirer/prompts';
 import { log } from '../utils/logger.mjs';
+import fs from 'node:fs';
 
 // dotnet tool install -g microsoft.sqlpackage - trenger denne for å importere bacpac og snakke med db
 // sqlpackage command som tilsynelatende funker:
@@ -19,14 +20,20 @@ const getConnectionString = (
   `Data Source=localhost,${port.split(':')[0]};Initial Catalog=${bacpac.split('.')[0]};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${appName};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
 
 function setProjectConnectionString(args) {
+  const { selectedAppsettingsPath } = args;
+
   try {
-    const [, appsettingsRaw] = getFile('/', appsettingsFile);
+    const appsettingsRaw = fs.readFileSync(selectedAppsettingsPath, 'utf-8');
 
     const appsettings = JSON.parse(appsettingsRaw);
 
     appsettings['ConnectionStrings']['EPiServerDB'] = getConnectionString(args);
 
-    writeFile('', appsettingsFile, JSON.stringify(appsettings, null, 2));
+    fs.writeFileSync(
+      selectedAppsettingsPath,
+      JSON.stringify(appsettings, null, 2),
+      'utf-8'
+    );
   } catch (error) {
     log.error('Could not update appsettings, error:', error.message);
     return;
@@ -138,7 +145,22 @@ program
     });
 
     if (setConString) {
-      setProjectConnectionString({ bacpac: selectedBacpacFile, port, name });
+      const appsettings = searchFileRecursive(
+        process.cwd(),
+        'appsettings.Development.json'
+      );
+
+      const selectedAppsettingsPath = await select({
+        message: 'What appsettings path do you want to use?',
+        choices: appsettings.map((file) => ({ name: file, value: file })),
+      });
+
+      setProjectConnectionString({
+        bacpac: selectedBacpacFile,
+        port,
+        name,
+        selectedAppsettingsPath,
+      });
     }
 
     createDockerComposeFile({ port, name, bacpac: selectedBacpacFile });
@@ -149,4 +171,7 @@ program
     log.info(
       'Run "opti bacpac" in project root to get sqlpackage command to import .bacpac file'
     );
+
+    const runBacpacCommand = [process.argv[0], process.argv[1], 'bacpac'];
+    program.parse(runBacpacCommand);
   });

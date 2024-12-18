@@ -4,7 +4,7 @@
   "main": "index.mjs",
   "type": "module",
   "scripts": {
-    "generate:command": "node ./scripts/generate/command.mjs",
+    "commands:add": "node ./scripts/generate/command.mjs",
     "cli:install": "npm install -g . ",
     "cli:uninstall": ""
   },
