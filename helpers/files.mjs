@@ -1,5 +1,6 @@
 import fs, { readdirSync } from 'node:fs';
-import path from 'node:path';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'url';
 
 const cwd = process.cwd();
 
