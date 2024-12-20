@@ -1,5 +1,6 @@
 import program from '../index.mjs';
 import { exec } from 'child_process'
+import { select } from '@inquirer/prompts';
 
 const cwd = process.cwd();
 
@@ -28,7 +29,16 @@ program
             launchSettings = files[0]
         }
 
-        console.log(launchSettings)
+        if (files.length > 1) {
+            console.log('multiple files found')
+
+            launchSettings = await select({
+                message: 'What .bacpac do you want to use?',
+                choices: files.map((file) => ({ name: file, value: file })),
+            });
+        }
+
+        console.log('Using ' + launchSettings)
     });
 
 const searchFiles = async (dir, fileName) => {
