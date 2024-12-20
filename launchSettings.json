@@ -1,0 +1,35 @@
+{
+    "profiles": {
+        "ks.web": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "applicationUrl": "https://localhost:7080/",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        "dev.ks12.no IIS": {
+            "commandName": "IIS",
+            "launchBrowser": true,
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        "dev.ks12.no IIS Express": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "applicationUrl": "https://dev.ks12.no",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    },
+    "iisSettings": {
+        "windowsAuthentication": false,
+        "anonymousAuthentication": true,
+        "iis": {
+            "applicationUrl": "https://dev.ks12.no",
+            "sslPort": 0
+        }
+    }
+}

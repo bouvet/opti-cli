@@ -1,6 +1,8 @@
 import program from '../index.mjs';
-import { exec } from 'child_process'
+import { exec, spawn } from 'child_process'
 import { select } from '@inquirer/prompts';
+import fs from 'fs'
+import { error } from 'console';
 
 const cwd = process.cwd();
 
@@ -39,7 +41,73 @@ program
         }
 
         console.log('Using ' + launchSettings)
+
+
+        // Choose profile to run
+
+        let profileToRun
+        const profiles = await readProfiles(launchSettings)
+
+        if (profiles.length == 1) {
+            profileToRun = profiles[0]
+        }
+
+        if (profiles.length > 1) {
+            console.log('multiple profiles found')
+
+            profileToRun = await select({
+                message: 'What .profile do you want to run?',
+                choices: profiles.map((profile) => ({ name: profile, value: profile })),
+            });
+
+
+        }
+
+        console.log(`Running profile "${profileToRun}"`)
+
+        runProfile(profileToRun)
     });
+
+const runProfile = (profile) => {
+    const dotnetWatch = spawn('dotnet watch', ['--launch-profile', profile], {
+        stdio: 'inherit',
+        shell: true
+    })
+
+    dotnetWatch.on('close', (code) => {
+        console.log('process exited with code: ', code)
+    })
+}
+
+
+const readProfiles = async (filePath) => {
+    try {
+        const launchSettings = await new Promise((resolve, reject) => {
+            fs.readFile(filePath, 'utf8', (err, data) => {
+                if (err) {
+                    return console.error(error)
+                }
+
+                resolve(data)
+            })
+        })
+
+        if (!launchSettings) {
+            return console.error('No launchsettings found')
+        }
+
+        const profiles = Object.keys(JSON.parse(launchSettings).profiles)
+
+        if (!profiles) {
+            return console.error('No profiles found in launchsettings')
+        }
+
+        return profiles
+
+    } catch (error) {
+        console.error(error)
+    }
+}
 
 const searchFiles = async (dir, fileName) => {
     try {

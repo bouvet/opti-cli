@@ -1,0 +1,20 @@
+{
+    "profiles": {
+        "ks.web": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "applicationUrl": "https://localhost:7080/",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    },
+    "iisSettings": {
+        "windowsAuthentication": false,
+        "anonymousAuthentication": true,
+        "iis": {
+            "applicationUrl": "https://dev.ks12.no",
+            "sslPort": 0
+        }
+    }
+}
