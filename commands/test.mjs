@@ -1,11 +1,11 @@
 import program from '../index.mjs';
 import { Logger } from '../utils/logger.mjs';
 
-const logger = new Logger('Test');
-
 program
   .command('test')
   .description('Test that commands are working')
   .action(async () => {
-    console.log(`Commands are working! Current working directory: ${cwd}`);
+    console.log(
+      `Commands are working! Current working directory: ${process.cwd()}`
+    );
   });
