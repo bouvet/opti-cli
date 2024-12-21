@@ -16,7 +16,7 @@ export function runCommand(command, args, cwd) {
       if (code === 0) {
         resolve();
       } else {
-        reject(`Process exited with code ${code}`);
+        reject(`Run command exited with code ${code}`);
       }
     });
   });

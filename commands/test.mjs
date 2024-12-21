@@ -1,5 +1,8 @@
 import program from '../index.mjs';
-const cwd = process.cwd();
+import { Logger } from '../utils/logger.mjs';
+
+const logger = new Logger('Test');
+
 program
   .command('test')
   .description('Test that commands are working')

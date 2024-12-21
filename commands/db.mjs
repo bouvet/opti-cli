@@ -1,16 +1,14 @@
 import { listDir, searchFileRecursive, writeFile } from '../helpers/files.mjs';
 import program from '../index.mjs';
 import { select, confirm } from '@inquirer/prompts';
-import { log } from '../utils/logger.mjs';
+import { log, Logger } from '../utils/logger.mjs';
 import fs from 'node:fs';
-import path from 'node:path';
-import { spawn } from 'child_process';
 import { importBacpac } from '../services/import-bacpac.service.mjs';
 import { createProjectConfig } from '../helpers/project-config.mjs';
-import { runCommand } from '../helpers/commands.mjs';
 import { killComposeStack } from '../helpers/docker.mjs';
+import path from 'node:path';
 
-const cwd = process.cwd();
+const logger = new Logger('DB');
 
 const getConnectionString = ({ port, name: appName, bacpac }) =>
   `Data Source=localhost,${port.split(':')[0]};Initial Catalog=${bacpac.split('.')[0]};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${appName};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
@@ -35,7 +33,11 @@ function setProjectConnectionString(args) {
     return;
   }
 
-  log.success('Connection string updated in appsettings.Development.json.');
+  logger.success('Updated connection string');
+  logger.path(
+    'Updated in',
+    selectedAppsettingsPath.split(path.basename(process.cwd()))[1]
+  );
 }
 
 function createDockerComposeFile(args) {
@@ -66,13 +68,14 @@ services:
     throw error;
   }
 
-  log.success('Created docker-compose.yml file.');
+  logger.success('Created docker-compose.yml in project root');
+  logger.path('Created in', '/docker-compose.yml');
 }
 
 async function handleOptions(options) {
   if (!options.port) {
     options.port = '1433:1433';
-    log.neutral(
+    logger.neutral(
       'No port passed, use --port to set it. Using default (1433:1433).'
     );
   }
@@ -83,7 +86,7 @@ async function handleOptions(options) {
 
   if (!options.name) {
     options.name = `sqledge-${options.port.split(':')[0]}`;
-    log.neutral(
+    logger.neutral(
       'No app name included, use --name to set app name (ex. KS, FF). Using default (sqledge-<port>).'
     );
   }
@@ -94,31 +97,40 @@ async function handleOptions(options) {
     process.exit(0);
   }
 
-  if (options.kill) {
-    await killComposeStack();
-  }
+  logger.group();
 }
 
-async function handleBacpacImport(name) {
+async function handleBacpacImport(name, kill) {
   const doBacpacImport = await confirm({
     message: 'Do you want to import the .bacpac now?',
   });
 
-  if (doBacpacImport) {
-    await importBacpac(name);
+  if (!doBacpacImport) {
+    return;
   }
+
+  const doKill =
+    kill ||
+    (await confirm({
+      message:
+        'Delete the existing database and server, if it exists? (required for consecutive imports)',
+    }));
+
+  if (doKill) {
+    await killComposeStack();
+  }
+
+  await importBacpac(name);
 }
 
 async function handleBacpacFile() {
   const [bacpacError, bacpacFilesRaw] = listDir('.bacpac');
 
   if (bacpacError) {
-    log.error(
+    logger.error(
       'Something went wrong fetching bacpac files, error: ',
-      bacpacError.message
-    );
-    log.help(
-      'Are you sure there is a /.bacpac/ directory containing .bacpac files in your project? '
+      bacpacError,
+      '🤔 Are you sure there is a /.bacpac/ directory containing .bacpac files in your project? '
     );
     process.exit(1);
   }
@@ -126,7 +138,7 @@ async function handleBacpacFile() {
   const bacpacFiles = bacpacFilesRaw.filter((f) => f.endsWith('.bacpac'));
 
   if (!bacpacFiles || !bacpacFiles.length) {
-    log.error(
+    logger.error(
       'No bacpac files found! Make sure you have a /.bacpac/ directory containing your bacpac files in the root of the project.'
     );
     process.exit(1);
@@ -146,9 +158,16 @@ async function handleAppSettings() {
     'appsettings.Development.json'
   );
 
+  if (appsettings.length === 1) {
+    return appsettings[0];
+  }
+
   const selectedAppsettingsPath = await select({
     message: 'What appsettings path do you want to use?',
-    choices: appsettings.map((file) => ({ name: file, value: file })),
+    choices: appsettings.map((appsettingsPath) => ({
+      name: appsettingsPath.split(path.basename(process.cwd()))[1],
+      value: appsettingsPath,
+    })),
   });
 
   return selectedAppsettingsPath;
@@ -165,17 +184,21 @@ program
   )
   .option(
     '-n, --name <name>',
-    'Specify the name of the database (defaults to sqledge)'
+    'Specify the name of the database container (defaults to sqledge-<port>)'
   )
   .option('-i, --import', 'Only run .bacpac import')
   .option('-k, --kill', 'Kill the whole container stack and related database')
   .action(async (options) => {
     await handleOptions(options);
 
-    const { port, name } = options;
+    const { port, name, kill } = options;
 
-    log.neutral(`Using port <${port}>`);
-    log.neutral(`Using name <${name}>`);
+    logger.group(
+      logger.env('Port', port),
+      logger.env('Name', name),
+      logger.env('Project', path.basename(process.cwd())),
+      logger.env('cwd', process.cwd())
+    );
 
     const selectedBacpacFile = await handleBacpacFile();
 
@@ -192,9 +215,8 @@ program
 
     createProjectConfig({ port, name, bacpac: selectedBacpacFile });
 
-    await handleBacpacImport(name);
+    await handleBacpacImport(name, kill);
 
-    log.info(
-      'Done! Use "docker-compose up" in root of project to start the database.'
-    );
+    logger.done('Database is ready!');
+    logger.neutral('Run <docker compose up> in project root to start database');
   });

@@ -1,49 +1,35 @@
 import { runCommand } from '../helpers/commands.mjs';
 import {
   checkIfContainerRunning,
-  checkLogsForString,
+  waitForContainerLogString,
 } from '../helpers/docker.mjs';
 import { getProjectConfig } from '../helpers/project-config.mjs';
-import { log } from '../utils/logger.mjs';
+import { Logger } from '../utils/logger.mjs';
 
-export async function importBacpac(name) {
+export async function importBacpac(name, logger = new Logger('bacpac')) {
   try {
     const isRunning = await checkIfContainerRunning(name);
 
     if (!isRunning) {
-      log.info('Running docker compose, starting database...');
+      logger.info('Starting database...');
       await runCommand('docker', ['compose', 'up', '-d'], process.cwd());
-      await checkLogsForString(name, 'EdgeTelemetry starting up');
-      log.info('DB has started successfully!');
+      await waitForContainerLogString(name, 'EdgeTelemetry starting up');
+      logger.success('Database started successfully!');
     }
 
     await startImport();
   } catch (error) {
-    console.error('Error during command execution:', error);
+    logger.error('Error during importing of bacpac', error);
+    process.exit(1);
   }
 }
 
-async function startImport() {
-  log.neutral('Reading projects.json...');
+async function startImport(logger = new Logger('bacpac')) {
+  logger.info('Starting .bacpac import...');
+
   const { BACPAC_FILENAME, DB_NAME, PORT, APP_NAME } = await getProjectConfig();
   const connectionString = `Data Source=localhost,${PORT};Initial Catalog=${DB_NAME};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${APP_NAME};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
   const sqlpackageCommand = `/Action:Import /SourceFile:"./.bacpac/${BACPAC_FILENAME}" /TargetConnectionString:"${connectionString}"`;
 
-  log.info('Starting .bacpac import...');
-
   await runCommand('sqlpackage', [sqlpackageCommand], process.cwd());
-
-  // await runCommand(
-  //   'docker',
-  //   [
-  //     'run',
-  //     '-it',
-  //     '--rm',
-  //     '-v',
-  //     `${process.cwd()}/.bacpac:/data`,
-  //     'markhobson/sqlpackage',
-  //     sqlpackageCommand,
-  //   ],
-  //   process.cwd()
-  // );
 }
