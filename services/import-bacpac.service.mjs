@@ -19,7 +19,11 @@ export async function importBacpac(name, logger = new Logger('bacpac')) {
 
     await startImport();
   } catch (error) {
-    logger.error('Error during importing of bacpac', error);
+    logger.error(
+      'Error during importing of bacpac',
+      error,
+      'Are you missing the sqlpackage cli? Install it with <opti sqlpackage> (requires dotnet runtime).'
+    );
     process.exit(1);
   }
 }

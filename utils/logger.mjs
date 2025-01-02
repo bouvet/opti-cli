@@ -124,10 +124,8 @@ export class Logger {
     console.log(
       `❌ `,
       colors.red(args[0]),
-      '\n',
-      args[1] ? colors.gray(args[1].stack || args[1]) : '',
-      '\n\n',
-      args[2] ? args.splice(2).join('\n') : ''
+      args[1] ? '\n' + colors.gray(args[1].stack || args[1]) : '',
+      args[2] ? '\n\n' + args.splice(2).join('\n') : ''
     );
   }
 }

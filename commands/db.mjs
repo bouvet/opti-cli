@@ -7,6 +7,7 @@ import { importBacpac } from '../services/import-bacpac.service.mjs';
 import { createProjectConfig } from '../helpers/project-config.mjs';
 import { killComposeStack } from '../helpers/docker.mjs';
 import path from 'node:path';
+import checkPrerequisites from '../services/check-prereqs.mjs';
 
 const logger = new Logger('DB');
 
@@ -189,6 +190,8 @@ program
   .option('-i, --import', 'Only run .bacpac import')
   .option('-k, --kill', 'Kill the whole container stack and related database')
   .action(async (options) => {
+    await checkPrerequisites('db');
+
     await handleOptions(options);
 
     const { port, name, kill } = options;
@@ -218,5 +221,7 @@ program
     await handleBacpacImport(name, kill);
 
     logger.done('Database is ready!');
-    logger.neutral('Run <docker compose up> in project root to start database');
+    logger.neutral(
+      'Run <docker compose up> in project root to start database/attach terminal'
+    );
   });
