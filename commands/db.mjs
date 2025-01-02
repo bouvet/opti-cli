@@ -1,4 +1,4 @@
-import { listDir, searchFileRecursive, writeFile } from '../helpers/files.mjs';
+import { searchFileRecursive, writeFile } from '../helpers/files.mjs';
 import program from '../index.mjs';
 import { select, confirm } from '@inquirer/prompts';
 import { log, Logger } from '../utils/logger.mjs';
@@ -15,14 +15,18 @@ const getConnectionString = ({ port, name: appName, bacpac }) =>
   `Data Source=localhost,${port.split(':')[0]};Initial Catalog=${bacpac.split('.')[0]};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${appName};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
 
 function setProjectConnectionString(args) {
-  const { selectedAppsettingsPath } = args;
+  const { selectedAppsettingsPath, port, name, bacpac } = args;
 
   try {
     const appsettingsRaw = fs.readFileSync(selectedAppsettingsPath, 'utf-8');
 
     const appsettings = JSON.parse(appsettingsRaw);
 
-    appsettings['ConnectionStrings']['EPiServerDB'] = getConnectionString(args);
+    appsettings['ConnectionStrings']['EPiServerDB'] = getConnectionString({
+      port,
+      name,
+      bacpac,
+    });
 
     fs.writeFileSync(
       selectedAppsettingsPath,
@@ -45,6 +49,7 @@ function createDockerComposeFile(args) {
   const { port, name } = args;
 
   const dockerCompose = `
+# This file was generated using the opti cli tool
 services:
   sqledge:
     image: mcr.microsoft.com/azure-sql-edge
@@ -74,6 +79,12 @@ services:
 }
 
 async function handleOptions(options) {
+  if (options.import) {
+    log.info('Running only import');
+    await importBacpac(options.name);
+    process.exit(0);
+  }
+
   if (!options.port) {
     options.port = '1433:1433';
     logger.neutral(
@@ -90,12 +101,6 @@ async function handleOptions(options) {
     logger.neutral(
       'No app name included, use --name to set app name (ex. KS, FF). Using default (sqledge-<port>).'
     );
-  }
-
-  if (options.import) {
-    log.info('Running only import');
-    await importBacpac(options.name);
-    process.exit(0);
   }
 
   logger.group();
@@ -125,39 +130,37 @@ async function handleBacpacImport(name, kill) {
 }
 
 async function handleBacpacFile() {
-  const [bacpacError, bacpacFilesRaw] = listDir('.bacpac');
+  const bacpacFiles = searchFileRecursive(process.cwd(), '.bacpac', {
+    useFileExtension: true,
+  });
 
-  if (bacpacError) {
+  if (!bacpacFiles.length) {
     logger.error(
-      'Something went wrong fetching bacpac files, error: ',
-      bacpacError,
-      '🤔 Are you sure there is a /.bacpac/ directory containing .bacpac files in your project? '
-    );
-    process.exit(1);
-  }
-
-  const bacpacFiles = bacpacFilesRaw.filter((f) => f.endsWith('.bacpac'));
-
-  if (!bacpacFiles || !bacpacFiles.length) {
-    logger.error(
-      'No bacpac files found! Make sure you have a /.bacpac/ directory containing your bacpac files in the root of the project.'
+      'No bacpac files found! Are you sure there are any .bacpac files in this project?'
     );
     process.exit(1);
   }
 
   const selectedBacpacFile = await select({
     message: 'What .bacpac do you want to use?',
-    choices: bacpacFiles.map((file) => ({ name: file, value: file })),
+    choices: bacpacFiles.map((filePath) => ({
+      name: filePath.split(process.cwd()).at(-1),
+      value: filePath,
+    })),
   });
 
   return selectedBacpacFile;
 }
 
 async function handleAppSettings() {
-  const appsettings = searchFileRecursive(
+  let appsettings = searchFileRecursive(
     process.cwd(),
     'appsettings.Development.json'
   );
+
+  if (!appsettings.length) {
+    appsettings = searchFileRecursive(process.cwd(), 'appsettings.json');
+  }
 
   if (appsettings.length === 1) {
     return appsettings[0];
@@ -203,20 +206,22 @@ program
       logger.env('cwd', process.cwd())
     );
 
-    const selectedBacpacFile = await handleBacpacFile();
+    const selectedBacpacFilePath = await handleBacpacFile();
 
     const selectedAppsettingsPath = await handleAppSettings();
 
+    const bacpacFileName = selectedBacpacFilePath.split('/').at(-1);
+
     setProjectConnectionString({
-      bacpac: selectedBacpacFile,
+      bacpac: bacpacFileName,
       port,
       name,
       selectedAppsettingsPath,
     });
 
-    createDockerComposeFile({ port, name, bacpac: selectedBacpacFile });
+    createDockerComposeFile({ port, name, bacpac: selectedBacpacFilePath });
 
-    createProjectConfig({ port, name, bacpac: selectedBacpacFile });
+    createProjectConfig({ port, name, bacpac: selectedBacpacFilePath });
 
     await handleBacpacImport(name, kill);
 

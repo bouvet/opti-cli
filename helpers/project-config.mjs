@@ -16,8 +16,8 @@ export function getProjectConfig() {
 
 export function createProjectConfig({ port, name, bacpac }) {
   const projectConfig = {
-    BACPAC_FILENAME: bacpac,
-    DB_NAME: bacpac.split('.')[0],
+    BACPAC_PATH: bacpac,
+    DB_NAME: bacpac.split('/').at(-1).split('.')[0],
     APP_NAME: name,
     PORT: port.split(':')[0],
   };

@@ -6,7 +6,7 @@ import {
 import { getProjectConfig } from '../helpers/project-config.mjs';
 import { Logger } from '../utils/logger.mjs';
 
-export async function importBacpac(name, logger = new Logger('bacpac')) {
+export async function importBacpac(name, logger = new Logger('import')) {
   try {
     const isRunning = await checkIfContainerRunning(name);
 
@@ -31,9 +31,9 @@ export async function importBacpac(name, logger = new Logger('bacpac')) {
 async function startImport(logger = new Logger('bacpac')) {
   logger.info('Starting .bacpac import...');
 
-  const { BACPAC_FILENAME, DB_NAME, PORT, APP_NAME } = await getProjectConfig();
+  const { BACPAC_PATH, DB_NAME, PORT, APP_NAME } = await getProjectConfig();
   const connectionString = `Data Source=localhost,${PORT};Initial Catalog=${DB_NAME};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${APP_NAME};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
-  const sqlpackageCommand = `/Action:Import /SourceFile:"./.bacpac/${BACPAC_FILENAME}" /TargetConnectionString:"${connectionString}"`;
+  const sqlpackageCommand = `/Action:Import /SourceFile:"${BACPAC_PATH}" /TargetConnectionString:"${connectionString}"`;
 
   await runCommand('sqlpackage', [sqlpackageCommand], process.cwd());
 }
