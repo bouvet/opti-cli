@@ -5,6 +5,7 @@ import { error } from 'console';
 import { Logger } from '../utils/logger.mjs';
 import { searchFileRecursive } from '../helpers/files.mjs';
 import { runCommand } from '../helpers/commands.mjs';
+import checkPrerequisites from '../services/check-prereqs.mjs';
 
 const logger = new Logger('watch');
 
@@ -12,6 +13,8 @@ program
   .command('watch')
   .description('Run dotnet watch with a specific profile from launchsettings')
   .action(async () => {
+    await checkPrerequisites('watch');
+
     const currentDir = process.cwd();
     const fileName = 'launchSettings.json';
 
