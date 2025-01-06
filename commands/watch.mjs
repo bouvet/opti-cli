@@ -1,5 +1,4 @@
 import program from '../index.mjs';
-import { exec, spawn } from 'child_process';
 import { select } from '@inquirer/prompts';
 import fs from 'fs';
 import { error } from 'console';
