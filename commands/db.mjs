@@ -1,16 +1,19 @@
 import { searchFileRecursive, writeFile } from '../helpers/files.mjs';
 import program from '../index.mjs';
 import { select, confirm } from '@inquirer/prompts';
-import { log, Logger } from '../utils/logger.mjs';
+import { Logger } from '../utils/logger.mjs';
 import fs from 'node:fs';
 import { importBacpac } from '../services/import-bacpac.service.mjs';
-import { createProjectConfig } from '../helpers/project-config.mjs';
+import {
+  createProjectConfig,
+  getProjectConfig,
+} from '../helpers/project-config.mjs';
 import { killComposeStack } from '../helpers/docker.mjs';
 import path from 'node:path';
 import checkPrerequisites from '../services/check-prereqs.mjs';
 import { runCommand } from '../helpers/commands.mjs';
 
-const logger = new Logger('DB');
+const logger = new Logger('db');
 
 const getConnectionString = ({ port, name: appName, bacpac }) =>
   `Data Source=localhost,${port.split(':')[0]};Initial Catalog=${bacpac.split('.')[0]};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${appName};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
@@ -35,7 +38,7 @@ function setProjectConnectionString(args) {
       'utf-8'
     );
   } catch (error) {
-    log.error('Could not update appsettings, error:', error.message);
+    logger.error('Could not update appsettings, error:', error.message);
     return;
   }
 
@@ -68,7 +71,7 @@ services:
   const [error] = writeFile('', 'docker-compose.yml', dockerCompose);
 
   if (error) {
-    log.error(
+    logger.error(
       'Something went wrong creating docker-compose.yml, error:',
       error.message
     );
@@ -80,12 +83,6 @@ services:
 }
 
 async function handleOptions(options) {
-  if (options.import) {
-    log.info('Running only import');
-    await importBacpac(options.name);
-    process.exit(0);
-  }
-
   if (!options.port) {
     options.port = '1433:1433';
     logger.neutral(
@@ -107,10 +104,12 @@ async function handleOptions(options) {
   logger.group();
 }
 
-async function handleBacpacImport(name, kill) {
-  const doBacpacImport = await confirm({
-    message: 'Do you want to import the .bacpac now?',
-  });
+async function handleBacpacImport(name, kill, force = false) {
+  const doBacpacImport =
+    force ||
+    (await confirm({
+      message: 'Do you want to import the .bacpac now?',
+    }));
 
   if (!doBacpacImport) {
     return;
@@ -203,6 +202,18 @@ dbCommand
   });
 
 dbCommand
+  .command('import')
+  .description(
+    'Only run .bacpac import, destroys the existing database and re-imports it'
+  )
+
+  .action(async () => {
+    logger.info('Running only import');
+    const { APP_NAME } = getProjectConfig();
+    await handleBacpacImport(APP_NAME, true, true);
+  });
+
+dbCommand
   .option(
     '-p, --port <port>',
     'Specify the port for the database (defaults to 1433:1433)'
@@ -211,7 +222,6 @@ dbCommand
     '-n, --name <name>',
     'Specify the name of the database container (defaults to sqledge-<port>)'
   )
-  .option('-i, --import', 'Only run .bacpac import')
   .option('-k, --kill', 'Kill the whole container stack and related database')
   .action(async (options) => {
     await checkPrerequisites('db');
@@ -248,6 +258,6 @@ dbCommand
 
     logger.done('Database is ready!');
     logger.neutral(
-      'Run <docker compose up> in project root to start database/attach terminal'
+      'Run <opti db up> or <docker compose up> in project root to start the database'
     );
   });
