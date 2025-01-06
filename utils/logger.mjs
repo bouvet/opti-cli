@@ -1,31 +1,3 @@
-export const log = {
-  success,
-  error,
-  info,
-  neutral,
-  help,
-};
-
-function success(msg) {
-  console.log(`✅ ${msg}`);
-}
-
-function error(msg, error) {
-  console.log(`❌ ${msg}`, error ?? '');
-}
-
-function info(msg) {
-  console.log(`✨ ${msg}`);
-}
-
-function neutral(msg) {
-  console.log(` > ${msg}`);
-}
-
-function help(msg) {
-  console.log(`🤔 ${msg}`);
-}
-
 export const colors = {
   cyan: (msg) => `\x1b[36m${msg}\x1b[0m`,
   gray: (msg) => `\x1b[90m${msg}\x1b[0m`,
@@ -128,43 +100,8 @@ export class Logger {
       args[2] ? '\n\n' + args.splice(2).join('\n') : ''
     );
   }
-}
 
-// export const log2 = {
-//   info: (command, message = '') =>
-//     console.log(colors.green('∘'), colors.gray(command), colors.cyan(message)),
-//   neutral: (message) =>
-//     console.log(' ', colors.gray('>'), colors.gray(message)),
-//   success: (tag, message = '') =>
-//     console.log(colors.green('✔'), colors.gray(tag), colors.cyan(message)),
-//   done: () => console.log('✨'),
-//   env: (key, value) =>
-//     console.log(
-//       Array(15 - key.length)
-//         .fill(' ')
-//         .join(''),
-//       colors.gray(key),
-//       colors.gray('⦂'),
-//       colors.cyan(value)
-//     ),
-//   group: (...args) => {
-//     console.log('');
-//   },
-//   /**
-//    * Logs an error message with optional stack trace and additional details.
-//    *
-//    * @param {...any} args - The arguments for the error function.
-//    *   - The first argument is the main error message (string).
-//    *   - The second argument (optional) is an Error object.
-//    *   - Additional arguments (optional) are logged as extra details.
-//    */
-//   error: (...args) =>
-//     console.log(
-//       `❌ `,
-//       colors.red(args[0]),
-//       '\n',
-//       args[1] ? colors.gray(args[1].stack) : '',
-//       '\n\n',
-//       args[2] ? args.splice(2).join('\n') : ''
-//     ),
-// };
+  help(msg) {
+    console.log(`🤔 ${colors.yellow(msg)}`);
+  }
+}
