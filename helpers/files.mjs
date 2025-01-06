@@ -1,5 +1,6 @@
 import fs, { readdirSync } from 'node:fs';
-import path from 'node:path';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'url';
 
 const cwd = process.cwd();
 
@@ -37,7 +38,20 @@ export function listDir(path) {
   }
 }
 
-export function searchFileRecursive(directory, targetFile) {
+/**
+ *
+ * @param {string} directory
+ * @param {string} targetFile
+ * @param { {useFileExtension: boolean} } options
+ * @returns {string[]}
+ */
+export function searchFileRecursive(
+  directory,
+  targetFile,
+  options = { useFileExtension: false }
+) {
+  const { useFileExtension } = options;
+
   const entries = readdirSync(directory, { withFileTypes: true }).filter(
     (item) => item.name !== 'node_modules'
   );
@@ -45,10 +59,16 @@ export function searchFileRecursive(directory, targetFile) {
   for (const entry of entries) {
     const fullPath = path.join(directory, entry.name);
 
-    if (entry.isFile() && entry.name === targetFile) {
+    const isMatch =
+      entry.isFile() &&
+      (useFileExtension
+        ? entry.name.endsWith(targetFile)
+        : entry.name === targetFile);
+
+    if (isMatch) {
       results.push(fullPath);
     } else if (entry.isDirectory()) {
-      results.push(searchFileRecursive(fullPath, targetFile));
+      results.push(searchFileRecursive(fullPath, targetFile, options));
     }
   }
   return results.flat();
