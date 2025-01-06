@@ -8,6 +8,7 @@ import { createProjectConfig } from '../helpers/project-config.mjs';
 import { killComposeStack } from '../helpers/docker.mjs';
 import path from 'node:path';
 import checkPrerequisites from '../services/check-prereqs.mjs';
+import { runCommand } from '../helpers/commands.mjs';
 
 const logger = new Logger('DB');
 
@@ -177,11 +178,31 @@ async function handleAppSettings() {
   return selectedAppsettingsPath;
 }
 
-program
+const dbCommand = program
   .command('db')
   .description(
     'Configure projects conn. string and create a docker-compse.yml for starting Azure SQL Edge db container, and import .bacpac.'
+  );
+
+dbCommand
+  .command('up')
+  .description(
+    'Start the datatbase container stack using <docker compose up> in detached mode'
   )
+  .action(async () => {
+    await runCommand('docker compose up -d');
+    logger.done('Database is ready!');
+  });
+
+dbCommand
+  .command('down')
+  .description('Stop the datatbase container stack using <docker compose up>')
+  .action(async () => {
+    await runCommand('docker compose down');
+    logger.done('Database shut down!');
+  });
+
+dbCommand
   .option(
     '-p, --port <port>',
     'Specify the port for the database (defaults to 1433:1433)'
