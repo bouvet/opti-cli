@@ -1,0 +1,5 @@
+testenv/
+.gitignore
+.prettierignore
+.prettierrc
+jsconfig.jsconfig

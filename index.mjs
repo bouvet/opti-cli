@@ -2,7 +2,9 @@
 
 import { Command } from 'commander';
 import registerCommands from './helpers/register-commands.mjs';
+import { Logger } from './utils/logger.mjs';
 
+const logger = new Logger('opti-cli');
 const program = new Command();
 
 (async () => {
@@ -16,5 +18,14 @@ const program = new Command();
 
   program.parse(process.argv);
 })();
+
+process.on('uncaughtException', (error) => {
+  if (error instanceof Error && error.name === 'ExitPromptError') {
+    logger.info('bye! 👋');
+  } else {
+    // Rethrow unknown errors
+    throw error;
+  }
+});
 
 export default program;

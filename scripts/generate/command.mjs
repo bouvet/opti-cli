@@ -8,10 +8,7 @@ const __commandsPath = path.join(process.cwd(), 'commands');
  * @returns {string}
  */
 const createTemplate = (name) =>
-  `
-#!/usr/bin/env node
-
-import program from '../index.mjs';
+  `import program from '../index.mjs';
 
 program
   .command("${name}")
