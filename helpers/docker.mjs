@@ -1,5 +1,5 @@
 import { spawn } from 'child_process';
-import { log, Logger } from '../utils/logger.mjs';
+import { Logger } from '../utils/logger.mjs';
 import path from 'node:path';
 import { runCommand } from './commands.mjs';
 
