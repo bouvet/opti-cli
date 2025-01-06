@@ -1,6 +1,9 @@
 import path from 'node:path';
 import appRoot from 'app-root-path';
 import fs from 'node:fs';
+import { Logger } from '../utils/logger.mjs';
+
+const logger = new Logger('Project config');
 
 const cwd = process.cwd();
 
@@ -9,7 +12,12 @@ export function getProjectConfig() {
   const projectsFile = fs.readFileSync(projectsJsonPath, 'utf8');
   const projects = JSON.parse(projectsFile || '{}');
   if (!projects[cwd]) {
-    throw new Error('Cant find project config!');
+    logger.error('Cannot find project config!');
+
+    logger.help(
+      'Have you ran the general setup using <opti db> in the root of the project?'
+    );
+    process.exit(1);
   }
   return projects[cwd];
 }
