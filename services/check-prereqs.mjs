@@ -2,8 +2,9 @@ import { commandExists, runCommand } from '../helpers/commands.mjs';
 import { Logger } from '../utils/logger.mjs';
 import { confirm } from '@inquirer/prompts';
 /**
- *
+ * Check if pre-requisites are in order for a given command
  * @param {string} command
+ * @param {Logger} logger
  */
 export default async function checkPrerequisites(
   command,
