@@ -78,8 +78,9 @@ program
   });
 
 const runProfile = (profile) => {
-  runCommand('dotnet watch', ['--launch-profile', profile]);
+  runCommand(`dotnet watch --launch-profile "${profile}"`);
 };
+
 
 const readProfiles = async (filePath) => {
   try {
