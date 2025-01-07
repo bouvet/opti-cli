@@ -69,7 +69,8 @@ program
     });
 
 const runProfile = (profile) => {
-    const dotnetWatch = spawn('dotnet watch', ['--launch-profile', profile], {
+    const command = `dotnet watch --launch-profile "${profile}"`
+    const dotnetWatch = spawn(command, {
         stdio: 'inherit',
         shell: true
     })
