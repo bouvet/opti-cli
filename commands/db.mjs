@@ -10,8 +10,10 @@ import {
 } from '../helpers/project-config.mjs';
 import { killComposeStack } from '../helpers/docker.mjs';
 import path from 'node:path';
-import checkPrerequisites from '../services/check-prereqs.mjs';
 import { runCommand } from '../helpers/commands.mjs';
+import { checkPrerequisites } from '../services/prereq/index.mjs';
+import checkDotnetExists from '../services/prereq/checks/dotnet.mjs';
+import checkSqlpackageExists from '../services/prereq/checks/sqlpackage.mjs';
 
 const logger = new Logger('db');
 
@@ -206,7 +208,6 @@ dbCommand
   .description(
     'Only run .bacpac import, destroys the existing database and re-imports it'
   )
-
   .action(async () => {
     logger.info('Running only import');
     const { APP_NAME } = getProjectConfig();
@@ -224,7 +225,7 @@ dbCommand
   )
   .option('-k, --kill', 'Kill the whole container stack and related database')
   .action(async (options) => {
-    await checkPrerequisites('db');
+    await checkPrerequisites([checkDotnetExists, checkSqlpackageExists]);
 
     await handleOptions(options);
 

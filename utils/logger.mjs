@@ -9,8 +9,12 @@ export const colors = {
 };
 
 export class Logger {
+  command = ' ';
+
   constructor(commandName) {
-    this.command = commandName || ' ';
+    if (commandName) {
+      this.command = commandName;
+    }
   }
 
   /**
