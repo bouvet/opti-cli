@@ -4,7 +4,7 @@ import { checkFailed } from '../index.mjs';
 
 /**
  * @param {import("../../../utils/logger.mjs").Logger} logger
- * @returns {Promise<import("../index.mjs").RequesiteCheckReturns>}
+ * @returns {Promise<import("../index.mjs").PrerequisiteCheckReturns>}
  */
 export default async function checkSqlpackageExists(logger) {
   const sqlpackageExists = await commandExists('sqlpackage');

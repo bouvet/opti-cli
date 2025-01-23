@@ -9,16 +9,16 @@ import { Logger } from '../../utils/logger.mjs';
  */
 
 /**
- * @typedef {Fail | Success} RequesiteCheckReturns
+ * @typedef {Fail | Success} PrerequisiteCheckReturns
  */
 
 /**
- * @typedef {function(Logger): RequesiteCheckReturns | Promise<RequesiteCheckReturns>} PreRequisiteCheckFn
+ * @typedef {function(Logger): PrerequisiteCheckReturns | Promise<PrerequisiteCheckReturns>} PrerequisiteCheckFn
  */
 
 /**
  * Ensure a command has the required pre requisutes - if not, exit execution
- * @param {Array<PreRequisiteCheckFn>} preRequesites - an array of functions that either returns checkFailed if failed or nothing if successful
+ * @param {Array<PrerequisiteCheckFn>} preRequesites - an array of functions that either returns checkFailed if failed or nothing if successful
  * @param {Logger} logger -
  */
 export async function checkPrerequisites(

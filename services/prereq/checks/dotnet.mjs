@@ -3,7 +3,7 @@ import { checkFailed } from '../index.mjs';
 
 /**
  * @param {import("../../../utils/logger.mjs").Logger} logger
- * @returns {Promise<import("../index.mjs").RequesiteCheckReturns>}
+ * @returns {Promise<import("../index.mjs").PrerequisiteCheckReturns>}
  */
 export default async function checkDotnetExists(logger) {
   const dotnetExists = await commandExists('dotnet');
