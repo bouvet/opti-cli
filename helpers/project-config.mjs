@@ -4,12 +4,16 @@ import fs from 'node:fs';
 import { Logger } from '../utils/logger.mjs';
 
 const logger = new Logger('Project config');
-
+const projectsJsonPath = path.resolve(appRoot.path + '/projects.json');
 const cwd = process.cwd();
 
+export function getProjectConfigFile() {
+  ensureProjectConfigExist();
+  return fs.readFileSync(projectsJsonPath, 'utf8');
+}
+
 export function getProjectConfig() {
-  const projectsJsonPath = path.resolve(appRoot.path + '/projects.json');
-  const projectsFile = fs.readFileSync(projectsJsonPath, 'utf8');
+  const projectsFile = getProjectConfigFile();
   const projects = JSON.parse(projectsFile || '{}');
   if (!projects[cwd]) {
     logger.error('Cannot find project config!');
@@ -30,13 +34,17 @@ export function createProjectConfig({ port, name, bacpac }) {
     PORT: port.split(':')[0],
   };
 
-  const projectsJsonPath = path.resolve(appRoot.path + '/projects.json');
-
-  const projectsFile = fs.readFileSync(projectsJsonPath, 'utf8');
+  const projectsFile = getProjectConfigFile();
 
   const projects = JSON.parse(projectsFile || '{}');
 
   projects[cwd] = projectConfig;
 
   fs.writeFileSync(projectsJsonPath, JSON.stringify(projects, null, 2));
+}
+
+export function ensureProjectConfigExist() {
+  if (!fs.existsSync(projectsJsonPath)) {
+    fs.writeFileSync(projectsJsonPath, '');
+  }
 }
