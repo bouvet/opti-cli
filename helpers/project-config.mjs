@@ -16,7 +16,7 @@ export function getProjectConfig() {
   const projectsFile = getProjectConfigFile();
   const projects = JSON.parse(projectsFile || '{}');
   if (!projects[cwd]) {
-    logger.error('Cannot find project config!');
+    logger.error('Cannot find the given projects config entry!');
 
     logger.help(
       'Have you ran the general setup using <opti db> in the root of the project?'
