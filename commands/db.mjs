@@ -204,6 +204,22 @@ dbCommand
   });
 
 dbCommand
+  .command('apply')
+  .description('Apply current config files to appsettings and launchsettings')
+  .action(async () => {
+    const selectedAppsettingsPath = await handleAppSettings();
+
+    const { DB_NAME, APP_NAME, PORT } = await getProjectConfig();
+
+    setProjectConnectionString({
+      selectedAppsettingsPath,
+      port: PORT,
+      name: APP_NAME,
+      bacpac: DB_NAME,
+    });
+  });
+
+dbCommand
   .command('import')
   .description(
     'Only run .bacpac import, destroys the existing database and re-imports it'
