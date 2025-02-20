@@ -15,6 +15,9 @@ A collection of CLI commands to simplify workflow at Team Opti, working with Opt
 - [Node.js](https://nodejs.org)
 - [npm](https://www.npmjs.com/)
 
+Some scripts require dotnet to run:
+- [Dotnet](https://dotnet.microsoft.com/en-us/download)
+
 ### Installation
 
 Clone the repository and install dependencies:
@@ -41,6 +44,7 @@ In terminal, run `opti` followed by command.
 | `opti db down`    | Stop the database container stack using `docker compose down`.                                  | N/A                                                                                         |
 | `opti db import`  | Import a `.bacpac` file, destroying the existing database and re-importing it.                  | N/A                                                                                         |
 | `opti sqlpackage` | Install sqlpackage with dotnet cli and add it to path                                           | `--uninstall`: Uninstalls sqlpackage                                                        |
+| `opti watch`      | Starts `dotnet watch` with the ability to choose which launch profile to run.                   | N/A                                                    |
 
 ### Adding a command
 
@@ -48,4 +52,3 @@ Adding a command can be done with this snippet which generates a new one from a 
 
 ```bash
 npm run commands:add <name of command>
-```
