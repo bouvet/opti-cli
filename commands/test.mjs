@@ -5,7 +5,8 @@ program
   .command('test')
   .description('Test that commands are working')
   .action(async () => {
-    console.log(
+    const logger = new Logger('test');
+    logger.info(
       `Commands are working! Current working directory: ${process.cwd()}`
     );
   });
