@@ -1,11 +1,11 @@
 import { spawn, spawnSync } from 'child_process';
 
-export function runCommand(command, args, cwd, options) {
+export function runShellCommand(command, args, cwd, options) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       stdio: options?.stdio || 'inherit', // Use 'inherit' to attach stdio to the parent
-      shell: true, // Run the command in a shell
-      cwd, // Optional: Set a specific working directory
+      shell: true,
+      cwd,
     });
 
     child.on('error', (err) => {

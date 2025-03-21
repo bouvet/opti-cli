@@ -1,4 +1,4 @@
-import { runCommand } from '../helpers/commands.mjs';
+import { runShellCommand } from '../helpers/shell-command.mjs';
 import {
   checkIfContainerRunning,
   waitForContainerLogString,
@@ -14,7 +14,7 @@ export async function exportBacpac(
     const sqlpackageCommand = `/Action:Export /TargetFile:"backup-${dbName}.bacpac" \
       /SourceConnectionString:"${connectionString}"`;
 
-    await runCommand('sqlpackage', [sqlpackageCommand], process.cwd());
+    await runShellCommand('sqlpackage', [sqlpackageCommand], process.cwd());
   } catch (error) {
     logger.error('Error during exporting of database', error);
     return;
@@ -32,7 +32,7 @@ export async function importBacpac(
 
     if (!isRunning) {
       logger.info('Starting database...');
-      await runCommand('docker', ['compose', 'up', '-d'], process.cwd());
+      await runShellCommand('docker', ['compose', 'up', '-d'], process.cwd());
       await waitForContainerLogString(
         azuresqlContainerName,
         'EdgeTelemetry starting up'
@@ -55,5 +55,5 @@ async function startImport(logger = new Logger('bacpac')) {
   const connectionString = `Data Source=localhost,${PORT};Initial Catalog=${DB_NAME};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${SQLEDGE_CONTAINER_NAME};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
   const sqlpackageCommand = `/Action:Import /SourceFile:"${BACPAC_PATH}" /TargetConnectionString:"${connectionString}"`;
 
-  await runCommand('sqlpackage', [sqlpackageCommand], process.cwd());
+  await runShellCommand('sqlpackage', [sqlpackageCommand], process.cwd());
 }

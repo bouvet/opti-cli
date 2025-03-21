@@ -1,4 +1,4 @@
-import { commandExists } from '../../../helpers/commands.mjs';
+import { commandExists } from '../../../helpers/shell-command.mjs';
 import { checkFailed } from '../prereq.service.mjs';
 
 /**

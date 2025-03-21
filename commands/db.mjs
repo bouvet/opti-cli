@@ -14,7 +14,7 @@ import {
   generateDockerCompose,
   killComposeStack,
 } from '../helpers/docker.mjs';
-import { runCommand } from '../helpers/commands.mjs';
+import { runShellCommand } from '../helpers/shell-command.mjs';
 import { checkPrerequisites } from '../services/prereq/prereq.service.mjs';
 import checkDotnetExists from '../services/prereq/checks/dotnet.mjs';
 import checkSqlpackageExists from '../services/prereq/checks/sqlpackage.mjs';
@@ -132,7 +132,7 @@ dbCommand
     'Start the datatbase container stack using <docker compose up> in detached mode'
   )
   .action(async () => {
-    await runCommand('docker compose up -d');
+    await runShellCommand('docker compose up -d');
     logger.done('Database is ready!');
   });
 
@@ -141,7 +141,7 @@ dbCommand
   .alias('stop')
   .description('Stop the datatbase container stack using <docker compose stop>')
   .action(async () => {
-    await runCommand('docker compose stop');
+    await runShellCommand('docker compose stop');
     logger.done('Database is shut down.');
   });
 
@@ -149,7 +149,7 @@ dbCommand
   .command('kill')
   .description('Kill the datatbase container stack using <docker compose down>')
   .action(async () => {
-    await runCommand('docker compose down');
+    await runShellCommand('docker compose down');
     logger.done('Database is shut down.');
   });
 

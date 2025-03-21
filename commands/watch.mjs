@@ -4,7 +4,7 @@ import fs from 'fs';
 import { error } from 'console';
 import { Logger } from '../utils/logger.mjs';
 import { searchFileRecursive } from '../helpers/files.mjs';
-import { runCommand } from '../helpers/commands.mjs';
+import { runShellCommand } from '../helpers/shell-command.mjs';
 import { checkPrerequisites } from '../services/prereq/prereq.service.mjs';
 import checkDotnetExists from '../services/prereq/checks/dotnet.mjs';
 
@@ -79,7 +79,7 @@ program
   });
 
 const runProfile = (profile) => {
-  runCommand(`dotnet watch --launch-profile "${profile}"`);
+  runShellCommand(`dotnet watch --launch-profile "${profile}"`);
 };
 
 const readProfiles = async (filePath) => {

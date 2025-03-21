@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import { Logger } from '../utils/logger.mjs';
 import path from 'node:path';
-import { runCommand } from './commands.mjs';
+import { runShellCommand } from './shell-command.mjs';
 import { writeFile } from '../helpers/files.mjs';
 
 export async function waitForContainerLogString(
@@ -84,7 +84,7 @@ export async function killComposeStack(
   logger = new Logger('Docker')
 ) {
   logger.info(`Killing compose stack ${composeStackName}...`);
-  await runCommand('docker compose', [
+  await runShellCommand('docker compose', [
     '-p',
     composeStackName,
     'down',

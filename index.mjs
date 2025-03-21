@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import registerCommands from './helpers/register-commands.mjs';
+import registerCommands from './utils/register-commands.mjs';
 import { Logger } from './utils/logger.mjs';
 
 const logger = new Logger('opti-cli');

@@ -1,4 +1,7 @@
-import { commandExists, runCommand } from '../../../helpers/commands.mjs';
+import {
+  commandExists,
+  runShellCommand,
+} from '../../../helpers/shell-command.mjs';
 import { confirm } from '@inquirer/prompts';
 import { checkFailed } from '../prereq.service.mjs';
 
@@ -15,7 +18,7 @@ export default async function checkSqlpackageExists(logger) {
       message: 'Install sqlpackage?',
     });
     if (installSqlPackage) {
-      await runCommand('opti', ['sqlpackage']);
+      await runShellCommand('opti', ['sqlpackage']);
     } else {
       logger.info('Can not continue without sqlpackage, exiting...');
       return checkFailed(0);
