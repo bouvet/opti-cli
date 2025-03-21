@@ -1,7 +1,8 @@
 import { spawn } from 'child_process';
 import { Logger } from '../utils/logger.mjs';
 import path from 'node:path';
-import { runCommand } from './commands.mjs';
+import { runShellCommand } from './shell-command.mjs';
+import { writeFile } from '../helpers/files.mjs';
 
 export async function waitForContainerLogString(
   containerName,
@@ -83,11 +84,57 @@ export async function killComposeStack(
   logger = new Logger('Docker')
 ) {
   logger.info(`Killing compose stack ${composeStackName}...`);
-  await runCommand('docker compose', [
+  await runShellCommand('docker compose', [
     '-p',
     composeStackName,
     'down',
     process.cwd(),
   ]);
   logger.success(`Container stack ${composeStackName} killed`);
+}
+
+/**
+ * Generate docker-compose.yml file contents for DB
+ * @param {{port: string, name: string}} param0
+ * @returns {string}
+ */
+export function generateDockerCompose({ port, name }) {
+  return `
+# This file was generated using the opti cli tool
+services:
+  sqledge:
+    image: mcr.microsoft.com/azure-sql-edge
+    container_name: ${name}
+    environment:
+      - ACCEPT_EULA=1
+      - MSSQL_SA_PASSWORD=bigStrongPassword8@
+    ports:
+      - "${port}"
+    cap_add:
+      - SYS_PTRACE
+    restart: unless-stopped
+    `;
+}
+
+/**
+ * Write docker-compose-yml to project root
+ * @param {{dockerComposeFile: string}} param0
+ * @param {Logger} logger
+ */
+export function createDockerComposeFile(
+  { dockerComposeFile },
+  logger = new Logger('docker')
+) {
+  const [error] = writeFile('', 'docker-compose.yml', dockerComposeFile);
+
+  if (error) {
+    logger.error(
+      'Something went wrong creating docker-compose.yml, error:',
+      error.message
+    );
+    throw error;
+  }
+
+  logger.success('Created docker-compose.yml in project root');
+  logger.path('Created in', '/docker-compose.yml');
 }

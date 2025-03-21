@@ -9,12 +9,14 @@ const __commandsPath = path.join(process.cwd(), 'commands');
  */
 const createTemplate = (name) =>
   `import program from '../index.mjs';
+import { Logger } from '../utils/logger.mjs';
 
 program
   .command("${name}")
   .description('Generated command')
   .action(() => {
-    console.log('Command "${name}" is registered!');
+    const logger = new Logger("${name}")
+    logger.done("Commands are working! Current working directory:" + process.cwd())
   });
 `.trim();
 

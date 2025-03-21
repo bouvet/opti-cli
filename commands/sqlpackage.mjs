@@ -1,4 +1,4 @@
-import { runCommand } from '../helpers/commands.mjs';
+import { runShellCommand } from '../helpers/shell-command.mjs';
 import program from '../index.mjs';
 import { exec } from 'node:child_process';
 import { Logger } from '../utils/logger.mjs';
@@ -16,7 +16,7 @@ program
   .action(async ({ uninstall }) => {
     if (uninstall) {
       logger.info('Uninstalling sqlpackage...');
-      await runCommand(
+      await runShellCommand(
         'dotnet',
         ['tool', 'uninstall', '-g', 'microsoft.sqlpackage'],
         process.cwd()
@@ -26,7 +26,7 @@ program
 
     logger.info('Installing sqlpackage...');
 
-    await runCommand(
+    await runShellCommand(
       'dotnet',
       ['tool', 'install', '-g', 'microsoft.sqlpackage'],
       process.cwd()
