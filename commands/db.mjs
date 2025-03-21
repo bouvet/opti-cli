@@ -1,97 +1,45 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { searchFileRecursive, writeFile } from '../helpers/files.mjs';
 import program from '../index.mjs';
 import { select, confirm } from '@inquirer/prompts';
 import { Logger } from '../utils/logger.mjs';
-import fs from 'node:fs';
-import { importBacpac } from '../services/import-bacpac.service.mjs';
+import { exportBacpac, importBacpac } from '../services/bacpac.service.mjs';
 import {
   createProjectConfig,
   getProjectConfig,
 } from '../helpers/project-config.mjs';
-import { killComposeStack } from '../helpers/docker.mjs';
-import path from 'node:path';
+import {
+  createDockerComposeFile,
+  getDockerComposeFile,
+  killComposeStack,
+} from '../helpers/docker.mjs';
 import { runCommand } from '../helpers/commands.mjs';
 import { checkPrerequisites } from '../services/prereq/index.mjs';
 import checkDotnetExists from '../services/prereq/checks/dotnet.mjs';
 import checkSqlpackageExists from '../services/prereq/checks/sqlpackage.mjs';
+import {
+  createConnectionString,
+  setConnectionString,
+} from '../helpers/connection-string.mjs';
+import { findAvailablePort } from '../helpers/ports.mjs';
+import { getAppsettingsFilePaths } from '../helpers/appsettings.mjs';
 
 const logger = new Logger('db');
 
-const getConnectionString = ({ port, name: appName, bacpac }) =>
-  `Data Source=localhost,${port.split(':')[0]};Initial Catalog=${bacpac.split('.')[0]};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${appName};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
-
-function setProjectConnectionString(args) {
-  const { selectedAppsettingsPath, port, name, bacpac } = args;
-
-  try {
-    const appsettingsRaw = fs.readFileSync(selectedAppsettingsPath, 'utf-8');
-
-    const appsettings = JSON.parse(appsettingsRaw);
-
-    appsettings['ConnectionStrings']['EPiServerDB'] = getConnectionString({
-      port,
-      name,
-      bacpac,
-    });
-
-    fs.writeFileSync(
-      selectedAppsettingsPath,
-      JSON.stringify(appsettings, null, 2),
-      'utf-8'
-    );
-  } catch (error) {
-    logger.error('Could not update appsettings, error:', error.message);
-    return;
-  }
-
-  logger.success('Updated connection string');
-  logger.path(
-    'Updated in',
-    selectedAppsettingsPath.split(path.basename(process.cwd()))[1]
-  );
-}
-
-function createDockerComposeFile(args) {
-  const { port, name } = args;
-
-  const dockerCompose = `
-# This file was generated using the opti cli tool
-services:
-  sqledge:
-    image: mcr.microsoft.com/azure-sql-edge
-    container_name: ${name}
-    environment:
-      - ACCEPT_EULA=1
-      - MSSQL_SA_PASSWORD=bigStrongPassword8@
-    ports:
-      - "${port}"
-    cap_add:
-      - SYS_PTRACE
-    restart: unless-stopped
-  `;
-
-  const [error] = writeFile('', 'docker-compose.yml', dockerCompose);
-
-  if (error) {
-    logger.error(
-      'Something went wrong creating docker-compose.yml, error:',
-      error.message
-    );
-    throw error;
-  }
-
-  logger.success('Created docker-compose.yml in project root');
-  logger.path('Created in', '/docker-compose.yml');
-}
-
 async function handleOptions(options) {
-  if (!options.port) {
-    options.port = '1433:1433';
-    logger.neutral(
-      'No port passed, use --port to set it. Using default (1433:1433).'
-    );
+  if (options.port && Number.isNaN(+options.port)) {
+    logger.error('Port is not an integer, exiting...');
+    process.exit(1);
   }
 
+  if (!options.port) {
+    const port = await findAvailablePort(1433);
+    options.port = `${port}:1433`;
+    logger.neutral(
+      `No port passed, use --port to set it. Using (${port}:1433).`
+    );
+  }
   if (!options.port.includes(':')) {
     options.port = `${options.port}:1433`;
   }
@@ -131,7 +79,7 @@ async function handleBacpacImport(name, kill, force = false) {
   await importBacpac(name);
 }
 
-async function handleBacpacFile() {
+async function handleBacpacFileSelect() {
   const bacpacFiles = searchFileRecursive(process.cwd(), '.bacpac', {
     useFileExtension: true,
   });
@@ -154,22 +102,15 @@ async function handleBacpacFile() {
   return selectedBacpacFile;
 }
 
-async function handleAppSettings() {
-  let appsettings = searchFileRecursive(
-    process.cwd(),
-    'appsettings.Development.json'
-  );
+async function handleAppSettingsFilePathSelect() {
+  const appsettings = getAppsettingsFilePaths();
 
-  if (!appsettings.length) {
-    appsettings = searchFileRecursive(process.cwd(), 'appsettings.json');
-  }
-
-  if (appsettings.length === 1) {
-    return appsettings[0];
+  if (!Array.isArray(appsettings)) {
+    return appsettings;
   }
 
   const selectedAppsettingsPath = await select({
-    message: 'What appsettings path do you want to use?',
+    message: 'What appsettings do you want to use?',
     choices: appsettings.map((appsettingsPath) => ({
       name: appsettingsPath.split(path.basename(process.cwd()))[1],
       value: appsettingsPath,
@@ -182,11 +123,12 @@ async function handleAppSettings() {
 const dbCommand = program
   .command('db')
   .description(
-    'Configure projects conn. string and create a docker-compse.yml for starting Azure SQL Edge db container, and import .bacpac.'
+    'Configure projects conn. string and create a docker-compse.yml for starting Azure SQL Edge db container and import .bacpac. To get started, create a .bacpac directory in the project root and add your .bacpac files there.'
   );
 
 dbCommand
   .command('up')
+  .alias('start')
   .description(
     'Start the datatbase container stack using <docker compose up> in detached mode'
   )
@@ -197,25 +139,24 @@ dbCommand
 
 dbCommand
   .command('down')
-  .description('Stop the datatbase container stack using <docker compose up>')
+  .alias('stop')
+  .description('Stop the datatbase container stack using <docker compose down>')
   .action(async () => {
     await runCommand('docker compose down');
-    logger.done('Database shut down!');
+    logger.done('Database is shut down.');
   });
 
 dbCommand
   .command('apply')
-  .description('Apply current config files to appsettings and launchsettings')
+  .description('Apply projects current DB connection string to appsettings')
   .action(async () => {
-    const selectedAppsettingsPath = await handleAppSettings();
+    const selectedAppsettingsPath = await handleAppSettingsFilePathSelect();
 
-    const { DB_NAME, APP_NAME, PORT } = await getProjectConfig();
+    const { CONNECTION_STRING: connectionString } = getProjectConfig();
 
-    setProjectConnectionString({
+    setConnectionString({
       selectedAppsettingsPath,
-      port: PORT,
-      name: APP_NAME,
-      bacpac: DB_NAME,
+      connectionString,
     });
   });
 
@@ -231,9 +172,25 @@ dbCommand
   });
 
 dbCommand
+  .command('export')
+  .description(
+    'Export the current database using the projects current connection string'
+  )
+  .action(async () => {
+    logger.info('Running export');
+    const { CONNECTION_STRING: connectionString, DB_NAME: dbName } =
+      getProjectConfig();
+
+    await exportBacpac({ connectionString, dbName });
+  });
+
+dbCommand
+  .description(
+    'Setup docker services for Azure SQL DB and import a given .bacpac file'
+  )
   .option(
     '-p, --port <port>',
-    'Specify the port for the database (defaults to 1433:1433)'
+    'Specify the port for the database. If no port, it will find a '
   )
   .option(
     '-n, --name <name>',
@@ -254,27 +211,41 @@ dbCommand
       logger.env('cwd', process.cwd())
     );
 
-    const selectedBacpacFilePath = await handleBacpacFile();
+    const selectedBacpacFilePath = await handleBacpacFileSelect();
 
-    const selectedAppsettingsPath = await handleAppSettings();
+    const selectedAppsettingsPath = await handleAppSettingsFilePathSelect();
 
     const bacpacFileName = selectedBacpacFilePath.split('/').at(-1);
 
-    setProjectConnectionString({
+    const connectionString = createConnectionString({
       bacpac: bacpacFileName,
       port,
       name,
-      selectedAppsettingsPath,
     });
 
-    createDockerComposeFile({ port, name, bacpac: selectedBacpacFilePath });
+    setConnectionString({
+      selectedAppsettingsPath,
+      connectionString,
+    });
 
-    createProjectConfig({ port, name, bacpac: selectedBacpacFilePath });
+    const dockerComposeFile = getDockerComposeFile({
+      port,
+      name,
+    });
+
+    createDockerComposeFile({ dockerComposeFile });
+
+    createProjectConfig({
+      port,
+      name,
+      bacpac: selectedBacpacFilePath,
+      connectionString,
+    });
 
     await handleBacpacImport(name, kill);
 
     logger.done('Database is ready!');
     logger.neutral(
-      'Run <opti db up> or <docker compose up> in project root to start the database'
+      'Database is running in docker! Run <opti db up> or <docker compose up -d> in project root to start the database in the future.'
     );
   });

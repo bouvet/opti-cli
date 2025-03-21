@@ -7,11 +7,19 @@ const logger = new Logger('Project config');
 const projectsJsonPath = path.resolve(appRoot.path + '/projects.json');
 const cwd = process.cwd();
 
+/**
+ * @typedef {{ BACPAC_PATH: string,   DB_NAME: string,   APP_NAME: string,   PORT: string,   CONNECTION_STRING: string }} ProjectConfig
+ */
+
 export function getProjectConfigFile() {
   ensureProjectConfigExist();
   return fs.readFileSync(projectsJsonPath, 'utf8');
 }
 
+/**
+ * Gets the current working projects projects.json entry
+ * @returns {ProjectConfig}
+ */
 export function getProjectConfig() {
   const projectsFile = getProjectConfigFile();
   const projects = JSON.parse(projectsFile || '{}');
@@ -26,12 +34,17 @@ export function getProjectConfig() {
   return projects[cwd];
 }
 
-export function createProjectConfig({ port, name, bacpac }) {
+/**
+ * Create a new project entry in the projects.json file
+ * @param {{ port: string, name: string, bacpac: string, connectionString: string }} param0
+ */
+export function createProjectConfig({ port, name, bacpac, connectionString }) {
   const projectConfig = {
     BACPAC_PATH: bacpac,
     DB_NAME: bacpac.split('/').at(-1).split('.')[0],
     APP_NAME: name,
     PORT: port.split(':')[0],
+    CONNECTION_STRING: connectionString,
   };
 
   const projectsFile = getProjectConfigFile();
