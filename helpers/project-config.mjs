@@ -8,7 +8,7 @@ const projectsJsonPath = path.resolve(appRoot.path + '/projects.json');
 const cwd = process.cwd();
 
 /**
- * @typedef {{ BACPAC_PATH: string,   DB_NAME: string,   APP_NAME: string,   PORT: string,   CONNECTION_STRING: string }} ProjectConfig
+ * @typedef {{ BACPAC_PATH: string, DB_NAME: string, SQLEDGE_CONTAINER_NAME: string, PORT: string, CONNECTION_STRING: string }} ProjectConfig
  */
 
 export function getProjectConfigFile() {
@@ -42,7 +42,7 @@ export function createProjectConfig({ port, name, bacpac, connectionString }) {
   const projectConfig = {
     BACPAC_PATH: bacpac,
     DB_NAME: bacpac.split('/').at(-1).split('.')[0],
-    APP_NAME: name,
+    SQLEDGE_CONTAINER_NAME: name,
     PORT: port.split(':')[0],
     CONNECTION_STRING: connectionString,
   };

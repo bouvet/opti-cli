@@ -94,11 +94,11 @@ export async function killComposeStack(
 }
 
 /**
- * Get docker-compose.yml file contents
+ * Generate docker-compose.yml file contents for DB
  * @param {{port: string, name: string}} param0
  * @returns {string}
  */
-export function getDockerComposeFile({ port, name }) {
+export function generateDockerCompose({ port, name }) {
   return `
 # This file was generated using the opti cli tool
 services:

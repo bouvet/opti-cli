@@ -23,14 +23,20 @@ export async function exportBacpac(
   logger.success('Database exported successfully!');
 }
 
-export async function importBacpac(name, logger = new Logger('import')) {
+export async function importBacpac(
+  azuresqlContainerName,
+  logger = new Logger('import')
+) {
   try {
-    const isRunning = await checkIfContainerRunning(name);
+    const isRunning = await checkIfContainerRunning(azuresqlContainerName);
 
     if (!isRunning) {
       logger.info('Starting database...');
       await runCommand('docker', ['compose', 'up', '-d'], process.cwd());
-      await waitForContainerLogString(name, 'EdgeTelemetry starting up');
+      await waitForContainerLogString(
+        azuresqlContainerName,
+        'EdgeTelemetry starting up'
+      );
       logger.success('Database started successfully!');
     }
 
@@ -44,8 +50,9 @@ export async function importBacpac(name, logger = new Logger('import')) {
 async function startImport(logger = new Logger('bacpac')) {
   logger.info('Starting .bacpac import...');
 
-  const { BACPAC_PATH, DB_NAME, PORT, APP_NAME } = getProjectConfig();
-  const connectionString = `Data Source=localhost,${PORT};Initial Catalog=${DB_NAME};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${APP_NAME};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
+  const { BACPAC_PATH, DB_NAME, PORT, SQLEDGE_CONTAINER_NAME } =
+    getProjectConfig();
+  const connectionString = `Data Source=localhost,${PORT};Initial Catalog=${DB_NAME};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${SQLEDGE_CONTAINER_NAME};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
   const sqlpackageCommand = `/Action:Import /SourceFile:"${BACPAC_PATH}" /TargetConnectionString:"${connectionString}"`;
 
   await runCommand('sqlpackage', [sqlpackageCommand], process.cwd());

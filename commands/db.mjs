@@ -11,11 +11,11 @@ import {
 } from '../helpers/project-config.mjs';
 import {
   createDockerComposeFile,
-  getDockerComposeFile,
+  generateDockerCompose,
   killComposeStack,
 } from '../helpers/docker.mjs';
 import { runCommand } from '../helpers/commands.mjs';
-import { checkPrerequisites } from '../services/prereq/index.mjs';
+import { checkPrerequisites } from '../services/prereq/prereq.service.mjs';
 import checkDotnetExists from '../services/prereq/checks/dotnet.mjs';
 import checkSqlpackageExists from '../services/prereq/checks/sqlpackage.mjs';
 import {
@@ -27,34 +27,7 @@ import { getAppsettingsFilePaths } from '../helpers/appsettings.mjs';
 
 const logger = new Logger('db');
 
-async function handleOptions(options) {
-  if (options.port && Number.isNaN(+options.port)) {
-    logger.error('Port is not an integer, exiting...');
-    process.exit(1);
-  }
-
-  if (!options.port) {
-    const port = await findAvailablePort(1433);
-    options.port = `${port}:1433`;
-    logger.neutral(
-      `No port passed, use --port to set it. Using (${port}:1433).`
-    );
-  }
-  if (!options.port.includes(':')) {
-    options.port = `${options.port}:1433`;
-  }
-
-  if (!options.name) {
-    options.name = `sqledge-${options.port.split(':')[0]}`;
-    logger.neutral(
-      'No app name included, use --name to set app name (ex. KS, FF). Using default (sqledge-<port>).'
-    );
-  }
-
-  logger.group();
-}
-
-async function handleBacpacImport(name, kill, force = false) {
+async function handleBacpacImport(containerDbName, kill, force = false) {
   const doBacpacImport =
     force ||
     (await confirm({
@@ -76,7 +49,7 @@ async function handleBacpacImport(name, kill, force = false) {
     await killComposeStack();
   }
 
-  await importBacpac(name);
+  await importBacpac(containerDbName);
 }
 
 async function handleBacpacFileSelect() {
@@ -120,6 +93,32 @@ async function handleAppSettingsFilePathSelect() {
   return selectedAppsettingsPath;
 }
 
+async function handleDBCommandOptions(options) {
+  if (options.port && Number.isNaN(+options.port)) {
+    logger.error('Port is not an integer, exiting...');
+    process.exit(1);
+  }
+
+  if (!options.port) {
+    const port = await findAvailablePort(1433);
+    options.port = `${port}:1433`;
+    logger.neutral(`No port passed, use --port to set it. Using ${port}:1433.`);
+  }
+
+  if (!options.port.includes(':')) {
+    options.port = `${options.port}:1433`;
+  }
+
+  if (!options.name) {
+    options.name = `sqledge-${options.port.split(':')[0]}`;
+    logger.neutral(
+      'No azure sql container name included, use --name to set azure sql container name (ex. KS, FF). Using default (sqledge-<port>).'
+    );
+  }
+
+  logger.group();
+}
+
 const dbCommand = program
   .command('db')
   .description(
@@ -140,7 +139,15 @@ dbCommand
 dbCommand
   .command('down')
   .alias('stop')
-  .description('Stop the datatbase container stack using <docker compose down>')
+  .description('Stop the datatbase container stack using <docker compose stop>')
+  .action(async () => {
+    await runCommand('docker compose stop');
+    logger.done('Database is shut down.');
+  });
+
+dbCommand
+  .command('kill')
+  .description('Kill the datatbase container stack using <docker compose down>')
   .action(async () => {
     await runCommand('docker compose down');
     logger.done('Database is shut down.');
@@ -167,8 +174,8 @@ dbCommand
   )
   .action(async () => {
     logger.info('Running only import');
-    const { APP_NAME } = getProjectConfig();
-    await handleBacpacImport(APP_NAME, true, true);
+    const { SQLEDGE_CONTAINER_NAME } = getProjectConfig();
+    await handleBacpacImport(SQLEDGE_CONTAINER_NAME, true, true);
   });
 
 dbCommand
@@ -194,19 +201,19 @@ dbCommand
   )
   .option(
     '-n, --name <name>',
-    'Specify the name of the database container (defaults to sqledge-<port>)'
+    'Specify the name of the azuresql database container (defaults to sqledge-<port>)'
   )
   .option('-k, --kill', 'Kill the whole container stack and related database')
   .action(async (options) => {
     await checkPrerequisites([checkDotnetExists, checkSqlpackageExists]);
 
-    await handleOptions(options);
+    await handleDBCommandOptions(options);
 
     const { port, name, kill } = options;
 
     logger.group(
       logger.env('Port', port),
-      logger.env('Name', name),
+      logger.env('DB Name', name),
       logger.env('Project', path.basename(process.cwd())),
       logger.env('cwd', process.cwd())
     );
@@ -220,7 +227,7 @@ dbCommand
     const connectionString = createConnectionString({
       bacpac: bacpacFileName,
       port,
-      name,
+      containerDbName: name,
     });
 
     setConnectionString({
@@ -228,7 +235,7 @@ dbCommand
       connectionString,
     });
 
-    const dockerComposeFile = getDockerComposeFile({
+    const dockerComposeFile = generateDockerCompose({
       port,
       name,
     });
@@ -246,6 +253,6 @@ dbCommand
 
     logger.done('Database is ready!');
     logger.neutral(
-      'Database is running in docker! Run <opti db up> or <docker compose up -d> in project root to start the database in the future.'
+      'Database is running in Docker! In the future you can run <opti db up (or start)> in project root to start the database, <opti db down (or stop)> to stop it and <opti db kill> to permanently remove it.'
     );
   });

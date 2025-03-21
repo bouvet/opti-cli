@@ -1,10 +1,10 @@
 import { commandExists, runCommand } from '../../../helpers/commands.mjs';
 import { confirm } from '@inquirer/prompts';
-import { checkFailed } from '../index.mjs';
+import { checkFailed } from '../prereq.service.mjs';
 
 /**
  * @param {import("../../../utils/logger.mjs").Logger} logger
- * @returns {Promise<import("../index.mjs").PrerequisiteCheckReturns>}
+ * @returns {Promise<import("../prereq.service.mjs").PrerequisiteCheckReturns>}
  */
 export default async function checkSqlpackageExists(logger) {
   const sqlpackageExists = await commandExists('sqlpackage');

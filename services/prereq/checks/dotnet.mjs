@@ -1,9 +1,9 @@
 import { commandExists } from '../../../helpers/commands.mjs';
-import { checkFailed } from '../index.mjs';
+import { checkFailed } from '../prereq.service.mjs';
 
 /**
  * @param {import("../../../utils/logger.mjs").Logger} logger
- * @returns {Promise<import("../index.mjs").PrerequisiteCheckReturns>}
+ * @returns {Promise<import("../prereq.service.mjs").PrerequisiteCheckReturns>}
  */
 export default async function checkDotnetExists(logger) {
   const dotnetExists = await commandExists('dotnet');
