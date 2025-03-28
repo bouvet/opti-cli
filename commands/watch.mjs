@@ -2,13 +2,13 @@ import program from '../index.mjs';
 import { select } from '@inquirer/prompts';
 import fs from 'fs';
 import { error } from 'console';
-import { Logger } from '../utils/logger.mjs';
+import { Printer } from '../utils/printer.mjs';
 import { searchFileRecursive } from '../helpers/files.mjs';
 import { runShellCommand } from '../helpers/shell-command.mjs';
 import { checkPrerequisites } from '../services/prereq/prereq.service.mjs';
 import checkDotnetExists from '../services/prereq/checks/dotnet.mjs';
 
-const logger = new Logger('watch');
+const printer = new Printer('watch');
 
 program
   .command('watch')
@@ -27,8 +27,8 @@ program
     });
 
     if (!files || !files.length) {
-      logger.error(`Could not find file with name ${fileName}`);
-      logger.help(
+      printer.error(`Could not find file with name ${fileName}`);
+      printer.help(
         `Are you sure there is a file named ${fileName} in the current working directory?`
       );
       process.exit(1);
@@ -50,7 +50,7 @@ program
       });
     }
 
-    logger.env('launchSetting', launchSettings);
+    printer.env('launchSetting', launchSettings);
 
     // Choose profile to run
 
@@ -58,7 +58,7 @@ program
     const profiles = await readProfiles(launchSettings);
 
     if (!profiles) {
-      logger.error(
+      printer.error(
         `Could not find any profiles to use with the launch setting ${launchSettings}`
       );
       process.exit(1);
@@ -75,7 +75,7 @@ program
       });
     }
 
-    logger.done(`Running profile "${profileToRun}"`);
+    printer.done(`Running profile "${profileToRun}"`);
 
     runProfile(profileToRun);
   });
@@ -89,7 +89,7 @@ const readProfiles = async (filePath) => {
     const launchSettings = await new Promise((resolve) => {
       fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
-          return logger.error(error);
+          return printer.error(error);
         }
 
         resolve(data);
@@ -97,25 +97,25 @@ const readProfiles = async (filePath) => {
     });
 
     if (!launchSettings) {
-      logger.error('No launchsettings found');
+      printer.error('No launchsettings found');
       process.exit(1);
     }
 
     const profiles = Object.keys(JSON.parse(launchSettings).profiles);
 
     if (!profiles) {
-      logger.error('No profiles found in launchsettings');
+      printer.error('No profiles found in launchsettings');
       process.exit(1);
     }
 
     return profiles;
   } catch (error) {
-    logger.error(error);
+    printer.error(error);
     process.exit(1);
   }
 };
 
 async function ensureDbIsRunng() {
   await runShellCommand('opti db up');
-  logger.group();
+  printer.group();
 }

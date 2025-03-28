@@ -1,4 +1,4 @@
-import { Logger } from '../../utils/logger.mjs';
+import { Printer } from '../../utils/printer.mjs';
 
 /**
  * @typedef {void} Success
@@ -13,20 +13,20 @@ import { Logger } from '../../utils/logger.mjs';
  */
 
 /**
- * @typedef {function(Logger): PrerequisiteCheckReturns | Promise<PrerequisiteCheckReturns>} PrerequisiteCheckFn
+ * @typedef {function(Printer): PrerequisiteCheckReturns | Promise<PrerequisiteCheckReturns>} PrerequisiteCheckFn
  */
 
 /**
  * Ensure a command has the required pre requisutes - if not, exit execution
  * @param {Array<PrerequisiteCheckFn>} preRequesites - an array of functions that either returns checkFailed if failed or nothing if successful
- * @param {Logger} logger -
+ * @param {Printer} printer - printer
  */
 export async function checkPrerequisites(
   preRequesites,
-  logger = new Logger('Prerequisites')
+  printer = new Printer('Prerequisites')
 ) {
   for (const requesiteCheck of preRequesites) {
-    const [checkPassed, exitCode] = (await requesiteCheck(logger)) || [true];
+    const [checkPassed, exitCode] = (await requesiteCheck(printer)) || [true];
 
     if (!checkPassed) {
       process.exit(exitCode || 0);

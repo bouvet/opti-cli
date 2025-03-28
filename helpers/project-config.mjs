@@ -1,9 +1,9 @@
 import path from 'node:path';
 import appRoot from 'app-root-path';
 import fs from 'node:fs';
-import { Logger } from '../utils/logger.mjs';
+import { Printer } from '../utils/printer.mjs';
 
-const logger = new Logger('Project config');
+const printer = new Printer('Project config');
 const projectsJsonPath = path.resolve(appRoot.path + '/projects.json');
 const cwd = process.cwd();
 
@@ -24,9 +24,9 @@ export function getProjectConfig() {
   const projectsFile = getProjectConfigFile();
   const projects = JSON.parse(projectsFile || '{}');
   if (!projects[cwd]) {
-    logger.error('Cannot find the given projects config entry!');
+    printer.error('Cannot find the given projects config entry!');
 
-    logger.help(
+    printer.help(
       'Have you ran the general setup using <opti db> in the root of the project?'
     );
     process.exit(1);

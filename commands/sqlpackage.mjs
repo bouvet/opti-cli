@@ -1,9 +1,9 @@
 import { runShellCommand } from '../helpers/shell-command.mjs';
 import program from '../index.mjs';
 import { exec } from 'node:child_process';
-import { Logger } from '../utils/logger.mjs';
+import { Printer } from '../utils/printer.mjs';
 
-const logger = new Logger('sqlpackage');
+const printer = new Printer('sqlpackage');
 const addToPathCommand = `cat << \EOF >> ~/.zprofile
 # Add .NET Core SDK tools
 export PATH="$PATH:/Users/$(whoami)/.dotnet/tools"
@@ -15,7 +15,7 @@ program
   .option('-u, --uninstall', 'Uninstalls sqlpackage')
   .action(async ({ uninstall }) => {
     if (uninstall) {
-      logger.info('Uninstalling sqlpackage...');
+      printer.info('Uninstalling sqlpackage...');
       await runShellCommand(
         'dotnet',
         ['tool', 'uninstall', '-g', 'microsoft.sqlpackage'],
@@ -24,7 +24,7 @@ program
       process.exit(0);
     }
 
-    logger.info('Installing sqlpackage...');
+    printer.info('Installing sqlpackage...');
 
     await runShellCommand(
       'dotnet',
@@ -32,7 +32,7 @@ program
       process.cwd()
     );
 
-    logger.info('Adding sqlpackage to path...');
+    printer.info('Adding sqlpackage to path...');
 
     exec(addToPathCommand, (err, stdout, stderror) => {
       if (stderror) {
@@ -47,6 +47,6 @@ program
       console.log(`${stdout}`);
     });
 
-    logger.done('sqlpackage added!');
-    logger.success('Restart shell and run it using <sqlpackage>.');
+    printer.done('sqlpackage added!');
+    printer.success('Restart shell and run it using <sqlpackage>.');
   });

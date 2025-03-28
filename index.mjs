@@ -2,9 +2,9 @@
 
 import { Command } from 'commander';
 import registerCommands from './utils/register-commands.mjs';
-import { Logger } from './utils/logger.mjs';
+import { Printer } from './utils/printer.mjs';
 
-const logger = new Logger('opti-cli');
+const printer = new Printer('opti-cli');
 const program = new Command();
 
 (async () => {
@@ -21,7 +21,7 @@ const program = new Command();
 
 process.on('uncaughtException', (error) => {
   if (error instanceof Error && error.name === 'ExitPromptError') {
-    logger.info('bye! 👋');
+    printer.info('bye! 👋');
   } else {
     // Rethrow unknown errors
     throw error;

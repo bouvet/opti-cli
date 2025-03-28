@@ -1,5 +1,5 @@
 import { spawn } from 'child_process';
-import { Logger } from '../utils/logger.mjs';
+import { Printer } from '../utils/printer.mjs';
 import path from 'node:path';
 import { runShellCommand } from './shell-command.mjs';
 import { writeFile } from '../helpers/files.mjs';
@@ -8,10 +8,10 @@ export async function waitForContainerLogString(
   containerName,
   searchString,
   timeoutInSeconds = 30,
-  logger = new Logger('Docker')
+  printer = new Printer('Docker')
 ) {
   const _timeout = setTimeout(() => {
-    logger.error(
+    printer.error(
       'Timeout reached for finding log string',
       new Error(
         `No log string '${searchString}' was found withing ${timeoutInSeconds} seconds`
@@ -81,16 +81,16 @@ export function checkIfContainerRunning(serviceName) {
  */
 export async function killComposeStack(
   composeStackName = path.basename(process.cwd()),
-  logger = new Logger('Docker')
+  printer = new Printer('Docker')
 ) {
-  logger.info(`Killing compose stack ${composeStackName}...`);
+  printer.info(`Killing compose stack ${composeStackName}...`);
   await runShellCommand('docker compose', [
     '-p',
     composeStackName,
     'down',
     process.cwd(),
   ]);
-  logger.success(`Container stack ${composeStackName} killed`);
+  printer.success(`Container stack ${composeStackName} killed`);
 }
 
 /**
@@ -119,22 +119,22 @@ services:
 /**
  * Write docker-compose-yml to project root
  * @param {{dockerComposeFile: string}} param0
- * @param {Logger} logger
+ * @param {Printer} printer
  */
 export function createDockerComposeFile(
   { dockerComposeFile },
-  logger = new Logger('docker')
+  printer = new Printer('docker')
 ) {
   const [error] = writeFile('', 'docker-compose.yml', dockerComposeFile);
 
   if (error) {
-    logger.error(
+    printer.error(
       'Something went wrong creating docker-compose.yml, error:',
       error.message
     );
     throw error;
   }
 
-  logger.success('Created docker-compose.yml in project root');
-  logger.path('Created in', '/docker-compose.yml');
+  printer.success('Created docker-compose.yml in project root');
+  printer.path('Created in', '/docker-compose.yml');
 }

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { searchFileRecursive, writeFile } from '../helpers/files.mjs';
 import program from '../index.mjs';
 import { select, confirm } from '@inquirer/prompts';
-import { Logger } from '../utils/logger.mjs';
+import { Printer } from '../utils/printer.mjs';
 import { exportBacpac, importBacpac } from '../services/bacpac.service.mjs';
 import {
   createProjectConfig,
@@ -25,7 +25,7 @@ import {
 import { findAvailablePort } from '../helpers/ports.mjs';
 import { getAppsettingsFilePaths } from '../helpers/appsettings.mjs';
 
-const logger = new Logger('db');
+const printer = new Printer('db');
 
 async function handleBacpacImport(containerDbName, kill, force = false) {
   const doBacpacImport =
@@ -58,7 +58,7 @@ async function handleBacpacFileSelect() {
   });
 
   if (!bacpacFiles.length) {
-    logger.error(
+    printer.error(
       'No bacpac files found! Are you sure there are any .bacpac files in this project?'
     );
     process.exit(1);
@@ -95,14 +95,16 @@ async function handleAppSettingsFilePathSelect() {
 
 async function handleDBCommandOptions(options) {
   if (options.port && Number.isNaN(+options.port)) {
-    logger.error('Port is not an integer, exiting...');
+    printer.error('Port is not an integer, exiting...');
     process.exit(1);
   }
 
   if (!options.port) {
     const port = await findAvailablePort(1433);
     options.port = `${port}:1433`;
-    logger.neutral(`No port passed, use --port to set it. Using ${port}:1433.`);
+    printer.neutral(
+      `No port passed, use --port to set it. Using ${port}:1433.`
+    );
   }
 
   if (!options.port.includes(':')) {
@@ -111,12 +113,12 @@ async function handleDBCommandOptions(options) {
 
   if (!options.name) {
     options.name = `sqledge-${options.port.split(':')[0]}`;
-    logger.neutral(
+    printer.neutral(
       'No azure sql container name included, use --name to set azure sql container name (ex. KS, FF). Using default (sqledge-<port>).'
     );
   }
 
-  logger.group();
+  printer.group();
 }
 
 const dbCommand = program
@@ -133,7 +135,7 @@ dbCommand
   )
   .action(async () => {
     await runShellCommand('docker compose up -d');
-    logger.done('Database is ready!');
+    printer.done('Database is ready!');
   });
 
 dbCommand
@@ -142,7 +144,7 @@ dbCommand
   .description('Stop the datatbase container stack using <docker compose stop>')
   .action(async () => {
     await runShellCommand('docker compose stop');
-    logger.done('Database is shut down.');
+    printer.done('Database is shut down.');
   });
 
 dbCommand
@@ -150,7 +152,7 @@ dbCommand
   .description('Kill the datatbase container stack using <docker compose down>')
   .action(async () => {
     await runShellCommand('docker compose down');
-    logger.done('Database is shut down.');
+    printer.done('Database is shut down.');
   });
 
 dbCommand
@@ -173,7 +175,7 @@ dbCommand
     'Only run .bacpac import, destroys the existing database and re-imports it'
   )
   .action(async () => {
-    logger.info('Running only import');
+    printer.info('Running only import');
     const { SQLEDGE_CONTAINER_NAME } = getProjectConfig();
     await handleBacpacImport(SQLEDGE_CONTAINER_NAME, true, true);
   });
@@ -184,7 +186,7 @@ dbCommand
     'Export the current database using the projects current connection string'
   )
   .action(async () => {
-    logger.info('Running export');
+    printer.info('Running export');
     const { CONNECTION_STRING: connectionString, DB_NAME: dbName } =
       getProjectConfig();
 
@@ -211,11 +213,11 @@ dbCommand
 
     const { port, name, kill } = options;
 
-    logger.group(
-      logger.env('Port', port),
-      logger.env('DB Name', name),
-      logger.env('Project', path.basename(process.cwd())),
-      logger.env('cwd', process.cwd())
+    printer.group(
+      printer.env('Port', port),
+      printer.env('DB Name', name),
+      printer.env('Project', path.basename(process.cwd())),
+      printer.env('cwd', process.cwd())
     );
 
     const selectedBacpacFilePath = await handleBacpacFileSelect();
@@ -251,8 +253,8 @@ dbCommand
 
     await handleBacpacImport(name, kill);
 
-    logger.done('Database is ready!');
-    logger.neutral(
+    printer.done('Database is ready!');
+    printer.neutral(
       'Database is running in Docker! In the future you can run <opti db up (or start)> in project root to start the database, <opti db down (or stop)> to stop it and <opti db kill> to permanently remove it.'
     );
   });

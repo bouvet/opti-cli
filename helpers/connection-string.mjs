@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { Logger } from '../utils/logger.mjs';
+import { Printer } from '../utils/printer.mjs';
 
 /**
  * Create a new connection string
@@ -13,12 +13,12 @@ export const createConnectionString = ({ port, containerDbName, bacpac }) =>
 /**
  * Create a new entry in the projects.json
  * @param {{ selectedAppsettingsPath: string, connectionString: string }} param0
- * @param {Logger} logger
+ * @param {Printer} printer
  * @returns {string}
  */
 export function setConnectionString(
   { selectedAppsettingsPath, connectionString },
-  logger = new Logger('constr')
+  printer = new Printer('constr')
 ) {
   try {
     const appsettingsRaw = fs.readFileSync(selectedAppsettingsPath, 'utf-8');
@@ -33,12 +33,12 @@ export function setConnectionString(
       'utf-8'
     );
   } catch (error) {
-    logger.error('Could not update appsettings, error:', error.message);
+    printer.error('Could not update appsettings, error:', error.message);
     return;
   }
 
-  logger.success('Updated connection string');
-  logger.path(
+  printer.success('Updated connection string');
+  printer.path(
     'Updated in',
     selectedAppsettingsPath.split(path.basename(process.cwd()))[1]
   );

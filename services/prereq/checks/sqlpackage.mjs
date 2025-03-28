@@ -6,21 +6,21 @@ import { confirm } from '@inquirer/prompts';
 import { checkFailed } from '../prereq.service.mjs';
 
 /**
- * @param {import("../../../utils/logger.mjs").Logger} logger
+ * @param {import("../../../utils/printer.mjs").Printer} printer
  * @returns {Promise<import("../prereq.service.mjs").PrerequisiteCheckReturns>}
  */
-export default async function checkSqlpackageExists(logger) {
+export default async function checkSqlpackageExists(printer) {
   const sqlpackageExists = await commandExists('sqlpackage');
 
   if (!sqlpackageExists) {
-    logger.info('The sqlpackage cli is required to use this command');
+    printer.info('The sqlpackage cli is required to use this command');
     const installSqlPackage = await confirm({
       message: 'Install sqlpackage?',
     });
     if (installSqlPackage) {
       await runShellCommand('opti', ['sqlpackage']);
     } else {
-      logger.info('Can not continue without sqlpackage, exiting...');
+      printer.info('Can not continue without sqlpackage, exiting...');
       return checkFailed(0);
     }
   }

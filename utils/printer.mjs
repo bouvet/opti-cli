@@ -8,7 +8,7 @@ export const colors = {
   bold: (msg) => `\x1b[1m${msg}\x1b[22m`,
 };
 
-export class Logger {
+export class Printer {
   command = ' ';
 
   constructor(commandName) {

@@ -4,11 +4,11 @@ import {
   waitForContainerLogString,
 } from '../helpers/docker.mjs';
 import { getProjectConfig } from '../helpers/project-config.mjs';
-import { Logger } from '../utils/logger.mjs';
+import { Printer } from '../utils/printer.mjs';
 
 export async function exportBacpac(
   { connectionString, dbName },
-  logger = new Logger('import')
+  printer = new Printer('import')
 ) {
   try {
     const sqlpackageCommand = `/Action:Export /TargetFile:"backup-${dbName}.bacpac" \
@@ -16,39 +16,39 @@ export async function exportBacpac(
 
     await runShellCommand('sqlpackage', [sqlpackageCommand], process.cwd());
   } catch (error) {
-    logger.error('Error during exporting of database', error);
+    printer.error('Error during exporting of database', error);
     return;
   }
 
-  logger.success('Database exported successfully!');
+  printer.success('Database exported successfully!');
 }
 
 export async function importBacpac(
   azuresqlContainerName,
-  logger = new Logger('import')
+  printer = new Printer('import')
 ) {
   try {
     const isRunning = await checkIfContainerRunning(azuresqlContainerName);
 
     if (!isRunning) {
-      logger.info('Starting database...');
+      printer.info('Starting database...');
       await runShellCommand('docker', ['compose', 'up', '-d'], process.cwd());
       await waitForContainerLogString(
         azuresqlContainerName,
         'EdgeTelemetry starting up'
       );
-      logger.success('Database started successfully!');
+      printer.success('Database started successfully!');
     }
 
     await startImport();
   } catch (error) {
-    logger.error('Error during importing of bacpac', error);
+    printer.error('Error during importing of bacpac', error);
     process.exit(1);
   }
 }
 
-async function startImport(logger = new Logger('bacpac')) {
-  logger.info('Starting .bacpac import...');
+async function startImport(printer = new Printer('bacpac')) {
+  printer.info('Starting .bacpac import...');
 
   const { BACPAC_PATH, DB_NAME, PORT, SQLEDGE_CONTAINER_NAME } =
     getProjectConfig();
