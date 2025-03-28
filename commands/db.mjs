@@ -130,9 +130,7 @@ const dbCommand = program
 dbCommand
   .command('up')
   .alias('start')
-  .description(
-    'Start the datatbase container stack using <docker compose up> in detached mode'
-  )
+  .description('Start the datatbase container stack')
   .action(async () => {
     await runShellCommand('docker compose up -d');
     printer.done('Database is ready!');
@@ -141,7 +139,7 @@ dbCommand
 dbCommand
   .command('down')
   .alias('stop')
-  .description('Stop the datatbase container stack using <docker compose stop>')
+  .description('Stop the datatbase container stac')
   .action(async () => {
     await runShellCommand('docker compose stop');
     printer.done('Database is shut down.');
@@ -149,7 +147,7 @@ dbCommand
 
 dbCommand
   .command('kill')
-  .description('Kill the datatbase container stack using <docker compose down>')
+  .description('Permanently remove the datatbase container stack')
   .action(async () => {
     await runShellCommand('docker compose down');
     printer.done('Database is shut down.');
