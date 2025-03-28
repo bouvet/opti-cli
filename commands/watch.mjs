@@ -16,6 +16,8 @@ program
   .action(async () => {
     await checkPrerequisites([checkDotnetExists]);
 
+    await ensureDbIsRunng();
+
     const currentDir = process.cwd();
     const fileName = 'launchSettings.json';
 
@@ -112,3 +114,8 @@ const readProfiles = async (filePath) => {
     process.exit(1);
   }
 };
+
+async function ensureDbIsRunng() {
+  await runShellCommand('opti db up');
+  logger.group();
+}
