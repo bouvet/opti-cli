@@ -17,7 +17,7 @@ export async function waitForContainerLogString(
         `No log string '${searchString}' was found withing ${timeoutInSeconds} seconds`
       )
     );
-    process.exit(1);
+    quit(1);
   }, timeoutInSeconds * 1000);
 
   return new Promise((resolve, reject) => {

@@ -61,7 +61,7 @@ async function handleBacpacFileSelect() {
     printer.error(
       'No bacpac files found! Are you sure there are any .bacpac files in this project?'
     );
-    process.exit(1);
+    quit(1);
   }
 
   const selectedBacpacFile = await select({
@@ -96,7 +96,7 @@ async function handleAppSettingsFilePathSelect() {
 async function handleDBCommandOptions(options) {
   if (options.port && Number.isNaN(+options.port)) {
     printer.error('Port is not an integer, exiting...');
-    process.exit(1);
+    quit(1);
   }
 
   if (!options.port) {

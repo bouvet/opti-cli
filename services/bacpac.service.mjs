@@ -43,7 +43,7 @@ export async function importBacpac(
     await startImport();
   } catch (error) {
     printer.error('Error during importing of bacpac', error);
-    process.exit(1);
+    quit(1);
   }
 }
 

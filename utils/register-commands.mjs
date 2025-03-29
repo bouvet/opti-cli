@@ -10,7 +10,6 @@ import { readdir } from 'node:fs/promises';
 export default async function registerCommands() {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-
   const commandsDir = path.resolve(__dirname, '../commands');
 
   try {

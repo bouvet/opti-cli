@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+global.quit = process.exit;
+
 import { Command } from 'commander';
 import registerCommands from './utils/register-commands.mjs';
 import { Printer } from './utils/printer.mjs';

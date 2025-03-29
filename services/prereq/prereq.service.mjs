@@ -29,7 +29,7 @@ export async function checkPrerequisites(
     const [checkPassed, exitCode] = (await requesiteCheck(printer)) || [true];
 
     if (!checkPassed) {
-      process.exit(exitCode || 0);
+      quit(exitCode || 0);
     }
   }
 }

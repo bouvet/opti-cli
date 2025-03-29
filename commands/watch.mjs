@@ -31,7 +31,7 @@ program
       printer.help(
         `Are you sure there is a file named ${fileName} in the current working directory?`
       );
-      process.exit(1);
+      quit(1);
     }
 
     let launchSettings;
@@ -61,7 +61,7 @@ program
       printer.error(
         `Could not find any profiles to use with the launch setting ${launchSettings}`
       );
-      process.exit(1);
+      quit(1);
     }
 
     if (profiles.length == 1) {
@@ -98,20 +98,20 @@ const readProfiles = async (filePath) => {
 
     if (!launchSettings) {
       printer.error('No launchsettings found');
-      process.exit(1);
+      quit(1);
     }
 
     const profiles = Object.keys(JSON.parse(launchSettings).profiles);
 
     if (!profiles) {
       printer.error('No profiles found in launchsettings');
-      process.exit(1);
+      quit(1);
     }
 
     return profiles;
   } catch (error) {
     printer.error(error);
-    process.exit(1);
+    quit(1);
   }
 };
 

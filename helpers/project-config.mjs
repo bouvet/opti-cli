@@ -29,7 +29,7 @@ export function getProjectConfig() {
     printer.help(
       'Have you ran the general setup using <opti db> in the root of the project?'
     );
-    process.exit(1);
+    quit(1);
   }
   return projects[cwd];
 }

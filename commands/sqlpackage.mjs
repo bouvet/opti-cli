@@ -21,7 +21,7 @@ program
         ['tool', 'uninstall', '-g', 'microsoft.sqlpackage'],
         process.cwd()
       );
-      process.exit(0);
+      quit(0);
     }
 
     printer.info('Installing sqlpackage...');
