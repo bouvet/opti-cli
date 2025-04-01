@@ -98,7 +98,7 @@ export async function killComposeStack(
  * @param {{port: string, name: string}} param0
  * @returns {string}
  */
-export function generateDockerCompose({ port, name }) {
+export function generateDBDockerCompose({ port, name }) {
   return `
 # This file was generated using the opti cli tool
 services:
@@ -109,7 +109,7 @@ services:
       - ACCEPT_EULA=1
       - MSSQL_SA_PASSWORD=bigStrongPassword8@
     ports:
-      - "${port}"
+      - "${port}:1433"
     cap_add:
       - SYS_PTRACE
     restart: unless-stopped

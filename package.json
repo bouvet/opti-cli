@@ -30,5 +30,8 @@
   "devDependencies": {
     "@types/node": "^22.13.14",
     "prettier": "^3.4.2"
+  },
+  "volta": {
+    "node": "22.14.0"
   }
 }
