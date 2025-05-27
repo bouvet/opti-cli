@@ -36,7 +36,7 @@ async function handleBacpacImport(containerDbName, kill, force = false) {
     }));
 
   if (!doBacpacImport) {
-    return;
+    return false;
   }
 
   const doKill =
@@ -51,6 +51,8 @@ async function handleBacpacImport(containerDbName, kill, force = false) {
   }
 
   await importBacpac(containerDbName);
+
+  return true;
 }
 
 async function handleBacpacFileSelect() {
@@ -173,12 +175,19 @@ dbCommand
       connectionString,
     });
 
-    await handleBacpacImport(name, kill);
+    const didImport = await handleBacpacImport(name, kill);
 
     printer.done('Database is ready!');
-    printer.neutral(
-      'Database is running in Docker! In the future you can run <opti db up (or start)> in project root to start the database, <opti db down (or stop)> to stop it and <opti db kill> to permanently remove it.'
-    );
+
+    if (didImport) {
+      printer.neutral(
+        'Database is running in Docker! In the future you can run <opti db up (or start)> in project root to start the database, <opti db down (or stop)> to stop it and <opti db kill> to permanently remove it.'
+      );
+    } else {
+      printer.neutral(
+        'Run <opti db up (or start)> in project root to start the database container, <opti db down (or stop)> to stop it and <opti db kill> to permanently remove it.'
+      );
+    }
   });
 
 dbCommand
