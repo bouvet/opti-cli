@@ -8,7 +8,7 @@ import { Printer } from '../utils/printer.mjs';
  * @returns {string}
  */
 export const createConnectionString = ({ port, containerDbName, bacpac }) =>
-  `Data Source=localhost,${port.split(':')[0]};Initial Catalog=${bacpac.split('.')[0]};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${containerDbName};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
+  `Data Source=localhost,${port};Initial Catalog=${bacpac.split('.')[0]};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${containerDbName};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
 
 /**
  * Create a new entry in the projects.json

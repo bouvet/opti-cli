@@ -1,7 +1,9 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { Printer } from '../utils/printer.mjs';
 
 const execAsync = promisify(exec);
+const printer = new Printer('');
 
 /**
  * Checks if a given port is available
@@ -29,7 +31,11 @@ export async function isPortAvailable(port) {
       return portIsAvailable;
     });
   } catch (err) {
-    console.error(`Error checking port availability for port ${port}:`, err);
+    printer.group(
+      printer.help(
+        'Could not connect to Docker to check port availability. Is Docker running?'
+      )
+    );
     return true; // Assume port is available on error
   }
 }
@@ -40,9 +46,12 @@ export async function isPortAvailable(port) {
  * @returns {Promise<number>}
  */
 export async function findAvailablePort(startPort) {
+  console.log('Finding port....');
   let port = startPort;
   while (!(await isPortAvailable(port))) {
     port++;
   }
+
+  console.log('FOUND PIORT', port);
   return port;
 }

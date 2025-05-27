@@ -43,7 +43,7 @@ export function createProjectConfig({ port, name, bacpac, connectionString }) {
     BACPAC_PATH: bacpac,
     DB_NAME: bacpac.split('/').at(-1).split('.')[0],
     SQLEDGE_CONTAINER_NAME: name,
-    PORT: port.split(':')[0],
+    PORT: port,
     CONNECTION_STRING: connectionString,
   };
 

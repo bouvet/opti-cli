@@ -1,6 +1,5 @@
-import fs from 'node:fs';
 import path from 'node:path';
-import { searchFileRecursive, writeFile } from '../helpers/files.mjs';
+import { searchFileRecursive } from '../helpers/files.mjs';
 import program from '../index.mjs';
 import { select, confirm } from '@inquirer/prompts';
 import { Printer } from '../utils/printer.mjs';
@@ -11,7 +10,7 @@ import {
 } from '../helpers/project-config.mjs';
 import {
   createDockerComposeFile,
-  generateDockerCompose,
+  generateDBDockerCompose,
   killComposeStack,
 } from '../helpers/docker.mjs';
 import { runShellCommand } from '../helpers/shell-command.mjs';
@@ -25,6 +24,8 @@ import {
 import { findAvailablePort } from '../helpers/ports.mjs';
 import { getAppsettingsFilePaths } from '../helpers/appsettings.mjs';
 
+const __defaultPort = 1433;
+
 const printer = new Printer('db');
 
 async function handleBacpacImport(containerDbName, kill, force = false) {
@@ -35,14 +36,14 @@ async function handleBacpacImport(containerDbName, kill, force = false) {
     }));
 
   if (!doBacpacImport) {
-    return;
+    return false;
   }
 
   const doKill =
     kill ||
     (await confirm({
       message:
-        'Delete the existing database and server, if it exists? (required for consecutive imports)',
+        'Delete the existing database and related data, if it exists? (required for consecutive imports)',
     }));
 
   if (doKill) {
@@ -50,6 +51,8 @@ async function handleBacpacImport(containerDbName, kill, force = false) {
   }
 
   await importBacpac(containerDbName);
+
+  return true;
 }
 
 async function handleBacpacFileSelect() {
@@ -95,30 +98,17 @@ async function handleAppSettingsFilePathSelect() {
 
 async function handleDBCommandOptions(options) {
   if (options.port && Number.isNaN(+options.port)) {
-    printer.error('Port is not an integer, exiting...');
+    printer.error('Port is not an integer.');
     quit(1);
   }
 
   if (!options.port) {
-    const port = await findAvailablePort(1433);
-    options.port = `${port}:1433`;
-    printer.neutral(
-      `No port passed, use --port to set it. Using ${port}:1433.`
-    );
-  }
-
-  if (!options.port.includes(':')) {
-    options.port = `${options.port}:1433`;
+    options.port = await findAvailablePort(__defaultPort);
   }
 
   if (!options.name) {
-    options.name = `sqledge-${options.port.split(':')[0]}`;
-    printer.neutral(
-      'No azure sql container name included, use --name to set azure sql container name (ex. KS, FF). Using default (sqledge-<port>).'
-    );
+    options.name = `sqledge-${options.port}`;
   }
-
-  printer.group();
 }
 
 const dbCommand = program
@@ -126,6 +116,79 @@ const dbCommand = program
   .description(
     'Configure projects conn. string and create a docker-compse.yml for starting Azure SQL Edge db container and import .bacpac. To get started, create a .bacpac directory in the project root and add your .bacpac files there.'
   );
+
+dbCommand
+  .description(
+    'Setup docker services for Azure SQL DB and import a given .bacpac file'
+  )
+  .option(
+    '-p, --port <port>',
+    'Specify the port for the database. If no port, it will find a '
+  )
+  .option(
+    '-n, --name <name>',
+    'Specify the name of the azuresql database container (defaults to sqledge-<port>)'
+  )
+  .option('-k, --kill', 'Kill the whole container stack and related database')
+  .action(async (options) => {
+    await checkPrerequisites([checkDotnetExists, checkSqlpackageExists]);
+
+    await handleDBCommandOptions(options);
+
+    const { port, name, kill } = options;
+
+    printer.group(
+      printer.env('Port', port),
+      printer.env('DB Name', name),
+      printer.env('Project', path.basename(process.cwd())),
+      printer.env('cwd', process.cwd())
+    );
+
+    const selectedBacpacFilePath = await handleBacpacFileSelect();
+
+    const selectedAppsettingsPath = await handleAppSettingsFilePathSelect();
+
+    const bacpacFileName = selectedBacpacFilePath.split('/').at(-1);
+
+    const connectionString = createConnectionString({
+      bacpac: bacpacFileName,
+      port,
+      containerDbName: name,
+    });
+
+    setConnectionString({
+      selectedAppsettingsPath,
+      connectionString,
+    });
+
+    const dockerComposeFile = generateDBDockerCompose({
+      port,
+      name,
+    });
+
+    createDockerComposeFile({ dockerComposeFile });
+
+    createProjectConfig({
+      port,
+      name,
+      bacpac: selectedBacpacFilePath,
+      connectionString,
+    });
+
+    const didImport = await handleBacpacImport(name, kill);
+
+    printer.done('Database is ready!');
+
+    if (didImport) {
+      printer.neutral(
+        'Database is running in Docker! In the future you can run <opti db up (or start)> in project root to start the database, <opti db down (or stop)> to stop it and <opti db kill> to permanently remove it.'
+      );
+    } else {
+      printer.neutral(
+        'Run <opti db up (or start)> in project root to start the database container, <opti db down (or stop)> to stop it and <opti db kill> to permanently remove it.'
+      );
+    }
+  });
 
 dbCommand
   .command('up')
@@ -189,70 +252,4 @@ dbCommand
       getProjectConfig();
 
     await exportBacpac({ connectionString, dbName });
-  });
-
-dbCommand
-  .description(
-    'Setup docker services for Azure SQL DB and import a given .bacpac file'
-  )
-  .option(
-    '-p, --port <port>',
-    'Specify the port for the database. If no port, it will find a '
-  )
-  .option(
-    '-n, --name <name>',
-    'Specify the name of the azuresql database container (defaults to sqledge-<port>)'
-  )
-  .option('-k, --kill', 'Kill the whole container stack and related database')
-  .action(async (options) => {
-    await checkPrerequisites([checkDotnetExists, checkSqlpackageExists]);
-
-    await handleDBCommandOptions(options);
-
-    const { port, name, kill } = options;
-
-    printer.group(
-      printer.env('Port', port),
-      printer.env('DB Name', name),
-      printer.env('Project', path.basename(process.cwd())),
-      printer.env('cwd', process.cwd())
-    );
-
-    const selectedBacpacFilePath = await handleBacpacFileSelect();
-
-    const selectedAppsettingsPath = await handleAppSettingsFilePathSelect();
-
-    const bacpacFileName = selectedBacpacFilePath.split('/').at(-1);
-
-    const connectionString = createConnectionString({
-      bacpac: bacpacFileName,
-      port,
-      containerDbName: name,
-    });
-
-    setConnectionString({
-      selectedAppsettingsPath,
-      connectionString,
-    });
-
-    const dockerComposeFile = generateDockerCompose({
-      port,
-      name,
-    });
-
-    createDockerComposeFile({ dockerComposeFile });
-
-    createProjectConfig({
-      port,
-      name,
-      bacpac: selectedBacpacFilePath,
-      connectionString,
-    });
-
-    await handleBacpacImport(name, kill);
-
-    printer.done('Database is ready!');
-    printer.neutral(
-      'Database is running in Docker! In the future you can run <opti db up (or start)> in project root to start the database, <opti db down (or stop)> to stop it and <opti db kill> to permanently remove it.'
-    );
   });
