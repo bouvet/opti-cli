@@ -13,7 +13,7 @@
   "scripts": {
     "commands:add": "node ./scripts/generate/command.mjs",
     "cli:install": "npm install -g . ",
-    "cli:uninstall": ""
+    "cli:uninstall": "npm uninstall -g @bouvet/opti-cli"
   },
   "bin": {
     "opti": "index.mjs"
