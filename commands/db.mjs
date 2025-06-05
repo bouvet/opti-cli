@@ -23,6 +23,8 @@ import {
 } from '../helpers/connection-string.mjs';
 import { findAvailablePort } from '../helpers/ports.mjs';
 import { getAppsettingsFilePaths } from '../helpers/appsettings.mjs';
+import checkBaseSetup from '../services/prereq/checks/base-setup.mjs';
+import { constants } from '../helpers/constants.mjs';
 
 const __defaultPort = 1433;
 
@@ -56,14 +58,17 @@ async function handleBacpacImport(containerDbName, kill, force = false) {
 }
 
 async function handleBacpacFileSelect() {
-  const bacpacFiles = searchFileRecursive(process.cwd(), '.bacpac', {
-    useFileExtension: true,
-  });
+  const bacpacFiles = searchFileRecursive(
+    process.cwd() + '/.opti/bacpac',
+    '.bacpac',
+    {
+      useFileExtension: true,
+    }
+  );
 
   if (!bacpacFiles.length) {
-    printer.error(
-      'No bacpac files found! Are you sure there are any .bacpac files in this project?'
-    );
+    printer.error('No bacpac files found!');
+    printer.help('Are you sure there are any .bacpac files in /.opti/bacpac?');
     quit(1);
   }
 
@@ -103,7 +108,10 @@ async function handleDBCommandOptions(options) {
   }
 
   if (!options.port) {
-    options.port = await findAvailablePort(__defaultPort);
+    // check if project config has a port
+    // if not, probably a new project, and try to find available port
+    options.port =
+      getProjectConfig()['PORT'] ?? (await findAvailablePort(__defaultPort));
   }
 
   if (!options.name) {
@@ -123,7 +131,7 @@ dbCommand
   )
   .option(
     '-p, --port <port>',
-    'Specify the port for the database. If no port, it will find a '
+    'Specify the port for the database. If no port, it will either default to what the project has used before or find an available one.'
   )
   .option(
     '-n, --name <name>',
@@ -131,7 +139,11 @@ dbCommand
   )
   .option('-k, --kill', 'Kill the whole container stack and related database')
   .action(async (options) => {
-    await checkPrerequisites([checkDotnetExists, checkSqlpackageExists]);
+    await checkPrerequisites([
+      checkDotnetExists,
+      checkSqlpackageExists,
+      checkBaseSetup,
+    ]);
 
     await handleDBCommandOptions(options);
 
@@ -195,7 +207,9 @@ dbCommand
   .alias('start')
   .description('Start the datatbase container stack')
   .action(async () => {
-    await runShellCommand('docker compose up -d');
+    await runShellCommand(
+      `docker compose -p ${constants.projectName} -f ./.opti/docker-compose.yml up -d`
+    );
     printer.done('Database is ready!');
   });
 
@@ -204,7 +218,9 @@ dbCommand
   .alias('stop')
   .description('Stop the datatbase container stac')
   .action(async () => {
-    await runShellCommand('docker compose stop');
+    await runShellCommand(
+      `docker compose -p ${constants.projectName} -f ./.opti/docker-compose.yml down`
+    );
     printer.done('Database is shut down.');
   });
 
@@ -212,8 +228,10 @@ dbCommand
   .command('kill')
   .description('Permanently remove the datatbase container stack')
   .action(async () => {
-    await runShellCommand('docker compose down');
-    printer.done('Database is shut down.');
+    await runShellCommand(
+      `docker compose -p ${constants.projectName} -f ./.opti/docker-compose.yml down --rmi all --volumes`
+    );
+    printer.done('Database permanently removed.');
   });
 
 dbCommand

@@ -30,9 +30,32 @@ export function writeFile(pathFromRoot, fileToWriteTo, toWrite) {
   }
 }
 
+export function appendFile(pathFromRoot, fileToAppendTo, toAppend) {
+  try {
+    return [
+      null,
+      fs.appendFileSync(
+        cwd + '/' + pathFromRoot + '/' + fileToAppendTo,
+        toAppend,
+        'utf-8'
+      ),
+    ];
+  } catch (error) {
+    return [error];
+  }
+}
+
 export function listDir(path) {
   try {
     return [null, fs.readdirSync(path)];
+  } catch (error) {
+    return [error];
+  }
+}
+
+export function createDir(path) {
+  try {
+    return [null, fs.mkdirSync(path, { recursive: true })];
   } catch (error) {
     return [error];
   }
