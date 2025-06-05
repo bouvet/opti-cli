@@ -46,12 +46,9 @@ export async function isPortAvailable(port) {
  * @returns {Promise<number>}
  */
 export async function findAvailablePort(startPort) {
-  console.log('Finding port....');
   let port = startPort;
   while (!(await isPortAvailable(port))) {
     port++;
   }
-
-  console.log('FOUND PIORT', port);
   return port;
 }

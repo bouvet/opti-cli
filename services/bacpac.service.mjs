@@ -32,7 +32,7 @@ export async function importBacpac(
 
     if (!isRunning) {
       printer.info('Starting database...');
-      await runShellCommand('docker', ['compose', 'up', '-d'], process.cwd());
+      await runShellCommand('opti db up');
       await waitForContainerLogString(
         azuresqlContainerName,
         'EdgeTelemetry starting up'

@@ -125,7 +125,7 @@ export function createDockerComposeFile(
   { dockerComposeFile },
   printer = new Printer('docker')
 ) {
-  const [error] = writeFile('', 'docker-compose.yml', dockerComposeFile);
+  const [error] = writeFile('.opti', 'docker-compose.yml', dockerComposeFile);
 
   if (error) {
     printer.error(
@@ -135,6 +135,6 @@ export function createDockerComposeFile(
     throw error;
   }
 
-  printer.success('Created docker-compose.yml in project root');
-  printer.path('Created in', '/docker-compose.yml');
+  printer.success('Created docker-compose.yml');
+  printer.path('Created in', '.opti/docker-compose.yml');
 }

@@ -1,18 +1,17 @@
-import path from 'node:path';
-import appRoot from 'app-root-path';
 import fs from 'node:fs';
 import { Printer } from '../utils/printer.mjs';
 
 const printer = new Printer('Project config');
-const projectsJsonPath = path.resolve(appRoot.path + '/projects.json');
+// const projectsJsonPath = path.resolve(appRoot.path + '/projects.json');
 const cwd = process.cwd();
+const projectsJsonPath = cwd + '/.opti/project.json';
 
 /**
  * @typedef {{ BACPAC_PATH: string, DB_NAME: string, SQLEDGE_CONTAINER_NAME: string, PORT: string, CONNECTION_STRING: string }} ProjectConfig
  */
 
 export function getProjectConfigFile() {
-  ensureProjectConfigExist();
+  // ensureProjectConfigExist();
   return fs.readFileSync(projectsJsonPath, 'utf8');
 }
 
@@ -21,17 +20,31 @@ export function getProjectConfigFile() {
  * @returns {ProjectConfig}
  */
 export function getProjectConfig() {
-  const projectsFile = getProjectConfigFile();
-  const projects = JSON.parse(projectsFile || '{}');
-  if (!projects[cwd]) {
-    printer.error('Cannot find the given projects config entry!');
+  const projectFile = getProjectConfigFile();
 
+  if (!projectFile) {
+    printer.error('Cannot find the given projects config!');
     printer.help(
-      'Have you ran the general setup using <opti db> in the root of the project?'
+      'Have you ran the general setup using <opti init> in the root of the project?'
     );
     quit(1);
   }
-  return projects[cwd];
+
+  const project = JSON.parse(projectFile || '{}');
+
+  return project;
+
+  // const projectsFile = getProjectConfigFile();
+  // const projects = JSON.parse(projectsFile || '{}');
+  // if (!projects[cwd]) {
+  //   printer.error('Cannot find the given projects config entry!');
+
+  //   printer.help(
+  //     'Have you ran the general setup using <opti init> in the root of the project?'
+  //   );
+  //   quit(1);
+  // }
+  // return projects[cwd];
 }
 
 /**
@@ -47,13 +60,13 @@ export function createProjectConfig({ port, name, bacpac, connectionString }) {
     CONNECTION_STRING: connectionString,
   };
 
-  const projectsFile = getProjectConfigFile();
+  // const projectFile = getProjectConfigFile();
 
-  const projects = JSON.parse(projectsFile || '{}');
+  // const project = JSON.parse(projectFile || '{}');
 
-  projects[cwd] = projectConfig;
+  // projects[cwd] = projectConfig;
 
-  fs.writeFileSync(projectsJsonPath, JSON.stringify(projects, null, 2));
+  fs.writeFileSync(projectsJsonPath, JSON.stringify(projectConfig, null, 2));
 }
 
 export function ensureProjectConfigExist() {
