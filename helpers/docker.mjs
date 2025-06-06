@@ -103,7 +103,7 @@ export function generateDBDockerCompose({ port, name }) {
 # This file was generated using the opti cli tool
 services:
   sqledge:
-    image: mcr.microsoft.com/azure-sql-edge
+    image: mcr.microsoft.com/mssql/server:2025-latest
     container_name: ${name}
     environment:
       - ACCEPT_EULA=1

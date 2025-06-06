@@ -115,7 +115,7 @@ async function handleDBCommandOptions(options) {
   }
 
   if (!options.name) {
-    options.name = `sqledge-${options.port}`;
+    options.name = `sqlserver-${options.port}`;
   }
 }
 
