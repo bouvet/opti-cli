@@ -24,8 +24,7 @@ import {
   handleBacpacFileSelect,
   handleBacpacImport,
 } from './services.mjs';
-
-const __defaultPort = 1433;
+import { constants } from '../../helpers/constants.mjs';
 
 export const printer = new Printer('db');
 
@@ -38,8 +37,10 @@ async function handleOptions(options) {
   if (!options.port) {
     // check if project config has a port
     // if not, probably a new project, and try to find available port
+    // ** this can be handled better, should also check availability of the current project port **
     options.port =
-      getProjectConfig()['PORT'] ?? (await findAvailablePort(__defaultPort));
+      getProjectConfig()?.PORT ??
+      (await findAvailablePort(constants.defaultDBPort));
   }
 
   if (!options.name) {
