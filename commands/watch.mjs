@@ -1,3 +1,5 @@
+'use command';
+
 import program from '../index.mjs';
 import { select } from '@inquirer/prompts';
 import fs from 'fs';

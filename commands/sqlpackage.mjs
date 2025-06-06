@@ -1,3 +1,5 @@
+'use command';
+
 import { runShellCommand } from '../helpers/shell-command.mjs';
 import program from '../index.mjs';
 import { exec } from 'node:child_process';

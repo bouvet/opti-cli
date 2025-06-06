@@ -1,3 +1,5 @@
+'use command';
+
 import {
   appendFile,
   createDir,

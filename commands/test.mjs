@@ -1,3 +1,5 @@
+'use command';
+
 import program from '../index.mjs';
 import { Printer } from '../utils/printer.mjs';
 
