@@ -5,6 +5,7 @@ import { killComposeStack } from '../../helpers/docker.mjs';
 import { importBacpac } from '../../services/bacpac.service.mjs';
 import { searchFileRecursive } from '../../helpers/files.mjs';
 import { printer } from './db.mjs';
+import { runShellCommand } from '../../helpers/shell-command.mjs';
 
 export async function handleAppSettingsFilePathSelect() {
   const appsettings = getAppsettingsFilePaths();
@@ -75,4 +76,20 @@ export async function handleBacpacFileSelect() {
   });
 
   return selectedBacpacFile;
+}
+
+export async function ensureDbIsRunning() {
+  const projectRoot = process.opti.projectConfig?.PROJECT_ROOT_PATH;
+  console.log(
+    '🚀 ~ services.mjs:83 ~ ensureDbIsRunning ~ process.opti.projectConfig:',
+    process.opti.projectConfig
+  );
+
+  if (!projectRoot) {
+    printer.info('No project root path set, run <opti db> to set it.');
+    return;
+  }
+
+  await runShellCommand('opti', ['db', 'up'], projectRoot);
+  printer.group();
 }

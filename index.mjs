@@ -5,6 +5,7 @@ global.quit = process.exit;
 import { Command } from 'commander';
 import registerCommands from './utils/register-commands.mjs';
 import { Printer } from './utils/printer.mjs';
+import { registerEnv } from './utils/register-env.mjs';
 
 const printer = new Printer('opti-cli');
 const program = new Command();
@@ -17,6 +18,8 @@ const program = new Command();
 
   // register all commands in /commands directory
   await registerCommands();
+
+  registerEnv();
 
   program.parse(process.argv);
 })();

@@ -2,10 +2,7 @@
 import path from 'node:path';
 import program from '../../index.mjs';
 import { Printer } from '../../utils/printer.mjs';
-import {
-  createProjectConfig,
-  getProjectConfig,
-} from '../../helpers/project-config.mjs';
+import { createProjectConfig } from '../../helpers/project-config.mjs';
 import {
   createDockerComposeFile,
   generateDBDockerCompose,
@@ -24,7 +21,6 @@ import {
   handleBacpacFileSelect,
   handleBacpacImport,
 } from './services.mjs';
-import { constants } from '../../helpers/constants.mjs';
 
 export const printer = new Printer('db');
 
@@ -39,8 +35,8 @@ async function handleOptions(options) {
     // if not, probably a new project, and try to find available port
     // ** this can be handled better, should also check availability of the current project port **
     options.port =
-      getProjectConfig()?.PORT ??
-      (await findAvailablePort(constants.defaultDBPort));
+      process.opti.projectConfig?.PORT ??
+      (await findAvailablePort(process.opti.constants.defaultDBPort));
   }
 
   if (!options.name) {
@@ -114,6 +110,7 @@ baseCommand
       name,
       bacpac: selectedBacpacFilePath,
       connectionString,
+      appSettingsPath: selectedAppsettingsPath,
     });
 
     const didImport = await handleBacpacImport(name, kill);

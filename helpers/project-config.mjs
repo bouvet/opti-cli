@@ -1,76 +1,127 @@
 import fs from 'node:fs';
 import { Printer } from '../utils/printer.mjs';
+import path from 'node:path';
+import { registerEnv } from '../utils/register-env.mjs';
 
 const printer = new Printer('Project config');
-// const projectsJsonPath = path.resolve(appRoot.path + '/projects.json');
 const cwd = process.cwd();
-const projectsJsonPath = cwd + '/.opti/project.json';
 
 /**
- * @typedef {{ BACPAC_PATH: string, DB_NAME: string, SQLEDGE_CONTAINER_NAME: string, PORT: string, CONNECTION_STRING: string }} ProjectConfig
+ * Recursively searches for the project.json file by traversing up the directory tree
+ * @param {string} startDir - Directory to start searching from
+ * @returns {{filePath: string, rootPath: string}|null} - Path to project.json and project root path, or null if not found
  */
+function findProjectFile(startDir = cwd) {
+  let currentDir = startDir;
 
-export function getProjectConfigFile() {
-  // ensureProjectConfigExist();
-  return fs.readFileSync(projectsJsonPath, 'utf8');
+  // Traverse up the directory tree
+  while (true) {
+    const projectFilePath = path.join(currentDir, '.opti', 'project.json');
+
+    if (fs.existsSync(projectFilePath)) {
+      return {
+        filePath: projectFilePath,
+        rootPath: currentDir,
+      };
+    }
+
+    // Get parent directory
+    const parentDir = path.dirname(currentDir);
+
+    // If we're at the root (parent is same as current)
+    if (parentDir === currentDir) {
+      return null;
+    }
+
+    // Move up to parent
+    currentDir = parentDir;
+  }
 }
 
 /**
  * Gets the current working projects projects.json entry
- * @returns {ProjectConfig}
+ * @returns {ProjectConfig | undefined}
  */
 export function getProjectConfig() {
-  const projectFile = getProjectConfigFile();
+  const projectInfo = findProjectFile();
 
-  if (!projectFile) {
-    printer.error('Cannot find the given projects config!');
-    printer.help(
-      'Have you ran the general setup using <opti init> in the root of the project?'
-    );
+  if (!projectInfo) {
+    printer.info('No config found.');
+    return;
+  }
+
+  // printer.error('Cannot find the project config file!');
+  // printer.help(
+  //   'Have you ran the general setup using <opti init> in the root of the project?'
+  // );
+  // quit(1);
+  const projectFile = fs.readFileSync(projectInfo.filePath, 'utf8');
+  try {
+    return JSON.parse(projectFile);
+  } catch (error) {
+    printer.error('Failed to parse project config file!', error.message);
     quit(1);
   }
 
-  const project = JSON.parse(projectFile || '{}');
-
-  return project;
-
-  // const projectsFile = getProjectConfigFile();
-  // const projects = JSON.parse(projectsFile || '{}');
-  // if (!projects[cwd]) {
-  //   printer.error('Cannot find the given projects config entry!');
-
+  // if (!projectFile) {
+  //   printer.error('Project config file exists but is empty!');
   //   printer.help(
   //     'Have you ran the general setup using <opti init> in the root of the project?'
   //   );
   //   quit(1);
   // }
-  // return projects[cwd];
+
+  // const projectsPath =
+  //   process.opti.projectConfig.PROJECT_ROOT_PATH + '/.opti/project.json';
+  // const projectFile = fs.readFileSync(projectsPath, 'utf8');
+
+  // if (!projectFile) {
+  //   printer.error('Cannot find the given projects config!');
+  //   printer.help(
+  //     'Have you ran the general setup using <opti init> in the root of the project?'
+  //   );
+  //   quit(1);
+  // }
+
+  // const project = JSON.parse(projectFile || '{}');
+
+  // return project;
 }
 
 /**
  * Create a new project entry in the projects.json file
- * @param {{ port: string, name: string, bacpac: string, connectionString: string }} param0
+ * @param {{ port: string, name: string, bacpac: string, connectionString: string, appSettingsPath: string }} param0
  */
-export function createProjectConfig({ port, name, bacpac, connectionString }) {
+export function createProjectConfig({
+  port,
+  name,
+  bacpac,
+  connectionString,
+  appSettingsPath,
+}) {
+  /** @type {ProjectConfig} */
   const projectConfig = {
+    PROJECT_ROOT_PATH: cwd,
+    PROJECT_NAME: path.basename(process.cwd()).toLowerCase(),
     BACPAC_PATH: bacpac,
     DB_NAME: bacpac.split('/').at(-1).split('.')[0],
     SQLEDGE_CONTAINER_NAME: name,
     PORT: port,
     CONNECTION_STRING: connectionString,
+    APPSETTINGS_PATH: appSettingsPath,
   };
 
-  // const projectFile = getProjectConfigFile();
+  const projectsPath = cwd + '/.opti/project.json';
 
-  // const project = JSON.parse(projectFile || '{}');
-
-  // projects[cwd] = projectConfig;
-
-  fs.writeFileSync(projectsJsonPath, JSON.stringify(projectConfig, null, 2));
+  fs.writeFileSync(projectsPath, JSON.stringify(projectConfig, null, 2));
+  registerEnv();
 }
 
 export function ensureProjectConfigExist() {
-  if (!fs.existsSync(projectsJsonPath)) {
-    fs.writeFileSync(projectsJsonPath, '');
+  const projectsPath =
+    process.opti.projectConfig.PROJECT_ROOT_PATH + '/.opti/project.json';
+
+  if (!fs.existsSync(projectsPath)) {
+    fs.writeFileSync(projectsPath, '');
   }
 }

@@ -7,7 +7,9 @@ export function getAppsettingsFilePaths() {
   );
 
   if (!appsettings.length) {
-    appsettings = searchFileRecursive(process.cwd(), 'appsettings.json');
+    appsettings = searchFileRecursive(process.cwd(), 'appsettings.json', {
+      ignoreDirectories: ['.vscode'],
+    });
   }
 
   if (appsettings.length === 1) {
