@@ -1,39 +1,39 @@
 {
-  "name": "@bouvet/opti-cli",
-  "version": "1.0.0",
-  "main": "index.mjs",
-  "type": "module",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/bouvet/opti-cli.git"
-  },
-  "scripts": {
-    "commands:add": "node ./scripts/generate/command.mjs",
-    "cli:install": "npm install -g . ",
-    "cli:uninstall": "npm uninstall -g @bouvet/opti-cli",
-    "publish:jsr": "npx jsr publish"
-  },
-  "bin": {
-    "opti": "index.mjs"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "@inquirer/prompts": "^7.2.0",
-    "app-root-path": "^3.1.0",
-    "commander": "^12.1.0"
-  },
-  "devDependencies": {
-    "@types/node": "^22.13.14",
-    "prettier": "^3.4.2",
-    "prettier-eslint": "^16.4.2"
-  },
-  "volta": {
-    "node": "22.14.0"
-  }
+    "name": "@bouvet/opti-cli",
+    "version": "1.0.0",
+    "main": "index.mjs",
+    "type": "module",
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/bouvet/opti-cli.git"
+    },
+    "scripts": {
+        "commands:add": "node ./scripts/generate/command.mjs",
+        "cli:install": "pnpm add -g .",
+        "cli:uninstall": "pnpm remove -g @bouvet/opti-cli",
+        "publish:jsr": "npx jsr publish"
+    },
+    "bin": {
+        "opti": "index.mjs"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "@inquirer/prompts": "7.10.1",
+        "app-root-path": "3.1.0",
+        "commander": "12.1.0"
+    },
+    "devDependencies": {
+        "@types/node": "22.19.1",
+        "prettier": "3.7.3",
+        "prettier-eslint": "16.4.2"
+    },
+    "volta": {
+        "node": "22.14.0"
+    }
 }
