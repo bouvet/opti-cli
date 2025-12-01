@@ -35,7 +35,7 @@ export async function importBacpac(
       await runShellCommand('opti db up');
       await waitForContainerLogString(
         azuresqlContainerName,
-        'EdgeTelemetry starting up'
+        'Recovery is complete'
       );
       printer.success('Database started successfully!');
     }

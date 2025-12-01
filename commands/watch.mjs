@@ -16,7 +16,7 @@ program
   .action(async () => {
     await checkPrerequisites([checkDotnetExists]);
 
-    await ensureDbIsRunng();
+    // await ensureDbIsRunng();
 
     const currentDir = process.cwd();
     const fileName = 'launchSettings.json';
