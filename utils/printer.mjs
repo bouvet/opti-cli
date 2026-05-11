@@ -6,6 +6,7 @@ export const colors = {
   yellow: (msg) => `\x1b[33m${msg}\x1b[0m`,
   yellowMuted: (msg) => `\x1b[38;5;94m${msg}\x1b[0m`,
   bold: (msg) => `\x1b[1m${msg}\x1b[22m`,
+  white: (msg) => `\x1b[97m${msg}\x1b[0m`,
 };
 
 export class Printer {
@@ -18,7 +19,7 @@ export class Printer {
   }
 
   /**
-   *
+   * General info message
    * @param {string} message
    */
   info(message) {
@@ -50,8 +51,19 @@ export class Printer {
   /**
    *
    * @param {string} message
+   * @param {{prefixMessage?: string, prefixColor?: keyof typeof colors }} [options]
    */
-  success(message) {
+  success(message, options) {
+    if (options) {
+      console.log(
+        colors.green('✔'),
+        colors[options.prefixColor || 'gray'](
+          options.prefixMessage || this.command
+        ),
+        colors.cyan(message)
+      );
+      return;
+    }
     console.log(
       colors.green('✔'),
       colors.gray(this.command),

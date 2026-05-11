@@ -3,7 +3,7 @@ import { getAppsettingsFilePaths } from '../../helpers/appsettings.mjs';
 import { select, confirm } from '@inquirer/prompts';
 import { killComposeStack } from '../../helpers/docker.mjs';
 import { importBacpac } from '../../services/bacpac.service.mjs';
-import { searchFileRecursive } from '../../helpers/files.mjs';
+import { searchFilesRecursive } from '../../helpers/files.mjs';
 import { printer } from './db.mjs';
 import { runShellCommand } from '../../helpers/shell-command.mjs';
 
@@ -11,6 +11,10 @@ export async function handleAppSettingsFilePathSelect() {
   const appsettings = getAppsettingsFilePaths();
 
   if (!Array.isArray(appsettings)) {
+    printer.success('/' + appsettings.split('/').slice(-2).join('/'), {
+      prefixMessage: 'Defaulted to following appsettings.',
+      prefixColor: 'white',
+    });
     return appsettings;
   }
 
@@ -53,7 +57,7 @@ export async function handleBacpacImport(containerDbName, kill, force = false) {
 }
 
 export async function handleBacpacFileSelect() {
-  const bacpacFiles = searchFileRecursive(
+  const bacpacFiles = searchFilesRecursive(
     process.cwd() + '/.opti/bacpac',
     '.bacpac',
     {

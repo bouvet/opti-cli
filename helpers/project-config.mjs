@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { Printer } from '../utils/printer.mjs';
 import path from 'node:path';
-import { registerEnv } from '../utils/register-env.mjs';
+import registerEnv from '../utils/register-env.mjs';
 
 const printer = new Printer('Project config');
 const cwd = process.cwd();
@@ -11,7 +11,7 @@ const cwd = process.cwd();
  * @param {string} startDir - Directory to start searching from
  * @returns {{filePath: string, rootPath: string}|null} - Path to project.json and project root path, or null if not found
  */
-function findProjectFile(startDir = cwd) {
+function findProjectConfigFile(startDir = cwd) {
   let currentDir = startDir;
 
   // Traverse up the directory tree
@@ -43,7 +43,7 @@ function findProjectFile(startDir = cwd) {
  * @returns {ProjectConfig | undefined}
  */
 export function getProjectConfig() {
-  const projectInfo = findProjectFile();
+  const projectInfo = findProjectConfigFile();
 
   if (!projectInfo) {
     printer.info('No config found.');
@@ -89,26 +89,19 @@ export function getProjectConfig() {
 }
 
 /**
- * Create a new project entry in the projects.json file
- * @param {{ port: string, name: string, bacpac: string, connectionString: string, appSettingsPath: string }} param0
+ * Create a new projects.json file
+ * @param {{ port: string, name: string, bacpac: string, connectionString: string }} param0
  */
-export function createProjectConfig({
-  port,
-  name,
-  bacpac,
-  connectionString,
-  appSettingsPath,
-}) {
+export function createProjectConfig({ port, name, bacpac, connectionString }) {
   /** @type {ProjectConfig} */
   const projectConfig = {
     PROJECT_ROOT_PATH: cwd,
     PROJECT_NAME: path.basename(process.cwd()).toLowerCase(),
     BACPAC_PATH: bacpac,
     DB_NAME: bacpac.split('/').at(-1).split('.')[0],
-    SQLEDGE_CONTAINER_NAME: name,
-    PORT: port,
+    DB_CONTAINER_NAME: name,
+    DB_PORT: port,
     CONNECTION_STRING: connectionString,
-    APPSETTINGS_PATH: appSettingsPath,
   };
 
   const projectsPath = cwd + '/.opti/project.json';

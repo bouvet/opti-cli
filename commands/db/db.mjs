@@ -35,7 +35,7 @@ async function handleOptions(options) {
     // if not, probably a new project, and try to find available port
     // ** this can be handled better, should also check availability of the current project port **
     options.port =
-      process.opti.projectConfig?.PORT ??
+      process.opti.projectConfig?.DB_PORT ??
       (await findAvailablePort(process.opti.constants.defaultDBPort));
   }
 

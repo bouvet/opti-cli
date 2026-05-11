@@ -49,9 +49,13 @@ export async function importBacpac(
 async function startImport(printer = new Printer('bacpac')) {
   printer.info('Starting .bacpac import...');
 
-  const { BACPAC_PATH, DB_NAME, PORT, SQLEDGE_CONTAINER_NAME } =
-    process.opti.projectConfig;
-  const connectionString = `Data Source=localhost,${PORT};Initial Catalog=${DB_NAME};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${SQLEDGE_CONTAINER_NAME};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
+  const {
+    BACPAC_PATH,
+    DB_NAME,
+    DB_PORT: PORT,
+    DB_CONTAINER_NAME,
+  } = process.opti.projectConfig;
+  const connectionString = `Data Source=localhost,${PORT};Initial Catalog=${DB_NAME};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${DB_CONTAINER_NAME};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
   const sqlpackageCommand = `/Action:Import /SourceFile:"${BACPAC_PATH}" /TargetConnectionString:"${connectionString}"`;
 
   await runShellCommand('sqlpackage', [sqlpackageCommand], process.cwd());

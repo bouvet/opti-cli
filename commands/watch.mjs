@@ -4,12 +4,12 @@ import program from '../index.mjs';
 import { select } from '@inquirer/prompts';
 import fs from 'fs';
 import { Printer } from '../utils/printer.mjs';
-import { searchFileRecursive } from '../helpers/files.mjs';
+import { searchFilesRecursive } from '../helpers/files.mjs';
 import { runShellCommand } from '../helpers/shell-command.mjs';
 import { checkPrerequisites } from '../services/prereq/prereq.service.mjs';
 import checkDotnetExists from '../services/prereq/checks/dotnet.mjs';
 import { ensureDbIsRunning } from './db/services.mjs';
-// import { getAppsettingsFilePaths } from '../helpers/appsettings.mjs';
+import checkBaseSetup from '../services/prereq/checks/base-setup.mjs';
 
 const printer = new Printer('watch');
 
@@ -21,21 +21,21 @@ program
     await ensureDbIsRunning();
 
     // const currentDir = process.cwd();
-    const fileName = 'launchSettings.json';
+    const launchSettingsFileName = 'launchSettings.json';
 
     // find launch settings
-    const files = searchFileRecursive(
-      process.opti.projectConfig.PROJECT_ROOT_PATH,
-      fileName,
+    const files = searchFilesRecursive(
+      process.opti.projectConfig?.PROJECT_ROOT_PATH || process.cwd(),
+      launchSettingsFileName,
       {
         relativePath: true,
       }
     );
 
     if (!files || !files.length) {
-      printer.error(`Could not find file with name ${fileName}`);
+      printer.error(`Could not find file with name ${launchSettingsFileName}`);
       printer.help(
-        `Are you sure there is a file named ${fileName} in the current working directory?`
+        `Are you sure there is a file named ${launchSettingsFileName} in the current working directory?`
       );
       quit(1);
     }
@@ -54,10 +54,6 @@ program
           value: file,
         })),
       });
-      console.log(
-        '🚀 ~ watch.mjs:58 ~ .action ~ launchSettings:',
-        launchSettingsPath
-      );
     }
 
     printer.env('launchSetting', launchSettingsPath);
@@ -85,21 +81,19 @@ program
       });
     }
 
-    printer.done(`Running profile "${profileToRun}"`);
+    runProfile(profileToRun, getCmsRootPath(launchSettingsPath));
 
-    runProfile(profileToRun);
+    printer.done(`Running profile "${profileToRun}"`);
   });
 
-const runProfile = (profile) => {
-  const cmsRootPath =
-    process.opti.projectConfig?.APPSETTINGS_PATH?.split('/appsettings')[0] ||
-    process.cwd();
+const getCmsRootPath = (path) =>
+  path.split('/Properties/launchSettings')[0] || process.cwd();
 
-  runShellCommand(
-    `dotnet`,
-    ['watch', `--launch-profile "${profile}"`],
-    cmsRootPath
-  );
+const runProfile = (profile, cmsRootPath) => {
+  runShellCommand(`cd ${cmsRootPath} && dotnet`, [
+    'watch',
+    `--launch-profile "${profile}"`,
+  ]);
 };
 
 const readProfiles = async (filePath) => {

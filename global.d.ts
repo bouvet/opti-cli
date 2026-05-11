@@ -5,11 +5,10 @@ declare global {
     PROJECT_NAME: string,
     BACPAC_PATH: string;
     DB_NAME: string;
-    SQLEDGE_CONTAINER_NAME: string;
-    PORT: string;
+    DB_CONTAINER_NAME: string;
+    DB_PORT: string;
     CONNECTION_STRING: string;
     PROJECT_ROOT_PATH: string;
-    APPSETTINGS_PATH: string;
   }
 
   namespace NodeJS {

@@ -8,14 +8,16 @@ const __commandsPath = path.join(process.cwd(), 'commands');
  * @returns {string}
  */
 const createTemplate = (name) =>
-  `import program from '../index.mjs';
+  `'use command'
+import program from '../index.mjs';
 import { Printer } from '../utils/printer.mjs';
+
+const printer = new Printer("${name}")
 
 program
   .command("${name}")
   .description('Generated command')
   .action(() => {
-    const printer = new Printer("${name}")
     printer.done("Commands are working! Current working directory:" + process.cwd())
   });
 `.trim();

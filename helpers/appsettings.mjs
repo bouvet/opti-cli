@@ -1,13 +1,16 @@
-import { searchFileRecursive } from './files.mjs';
+import { searchFilesRecursive } from './files.mjs';
 
 export function getAppsettingsFilePaths() {
-  let appsettings = searchFileRecursive(
+  let appsettings = searchFilesRecursive(
     process.cwd(),
-    'appsettings.Development.json'
+    'appsettings.Development.json',
+    {
+      ignoreDirectories: ['.vscode'],
+    }
   );
 
   if (!appsettings.length) {
-    appsettings = searchFileRecursive(process.cwd(), 'appsettings.json', {
+    appsettings = searchFilesRecursive(process.cwd(), 'appsettings.json', {
       ignoreDirectories: ['.vscode'],
     });
   }

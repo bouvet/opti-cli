@@ -1,6 +1,6 @@
 import { getProjectConfig } from '../helpers/project-config.mjs';
 
-export function registerEnv() {
+export default function registerEnv() {
   // @ts-ignore
   process.opti = {};
 

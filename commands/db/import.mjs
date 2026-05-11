@@ -10,6 +10,6 @@ baseCommand
   )
   .action(async () => {
     printer.info('Running only import');
-    const { SQLEDGE_CONTAINER_NAME } = process.opti.projectConfig;
-    await handleBacpacImport(SQLEDGE_CONTAINER_NAME, true, true);
+    const { DB_CONTAINER_NAME } = process.opti.projectConfig;
+    await handleBacpacImport(DB_CONTAINER_NAME, true, true);
   });

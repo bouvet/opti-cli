@@ -68,7 +68,7 @@ export function createDir(path) {
  * @param { {useFileExtension?: boolean, relativePath?: boolean, ignoreDirectories?: Array<string>} } [options]
  * @returns {string[]}
  */
-export function searchFileRecursive(
+export function searchFilesRecursive(
   directory,
   targetFile,
   options = {
@@ -81,9 +81,8 @@ export function searchFileRecursive(
 
   const entries = readdirSync(directory, { withFileTypes: true }).filter(
     (item) =>
-      item.name !== 'node_modules' || !ignoreDirectories.includes(item.name)
+      item.name !== 'node_modules' && !ignoreDirectories.includes(item.name)
   );
-  console.log('🚀 ~ files.mjs:86 ~ entries:', entries);
 
   const results = [];
 
@@ -101,7 +100,7 @@ export function searchFileRecursive(
         relativePath ? `./${path.relative(process.cwd(), fullPath)}` : fullPath
       );
     } else if (entry.isDirectory()) {
-      results.push(searchFileRecursive(fullPath, targetFile, options));
+      results.push(searchFilesRecursive(fullPath, targetFile, options));
     }
   }
 
