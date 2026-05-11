@@ -1,4 +1,4 @@
-<img width="148" height="183" alt="image" src="https://github.com/user-attachments/assets/8aacde70-2461-430e-aa61-22066c2a2794" /># Team Opti CLI Tool
+# Team Opti CLI Tool
 
 A collection of CLI commands to simplify workflow at Team Opti, working with Optimizely.
 
