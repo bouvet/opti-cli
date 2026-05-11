@@ -1,4 +1,4 @@
-# Team Opti CLI Tool
+<img width="148" height="183" alt="image" src="https://github.com/user-attachments/assets/8aacde70-2461-430e-aa61-22066c2a2794" /># Team Opti CLI Tool
 
 A collection of CLI commands to simplify workflow at Team Opti, working with Optimizely.
 
@@ -61,3 +61,16 @@ Adding a command can be done with this snippet which generates a new one from a 
 npm run commands:add <name of command>
 
 ```
+
+## Known Errors When Importing Database
+
+### Could not allocate a new page for database
+```sh
+*** Could not allocate a new page for database 'arbi02mstr6nz45prep' because the 'PRIMARY' filegroup is full due to lack of storage space or database files reaching the maximum allowed size. Note that UNLIMITED files are still limited to 16TB. Create the necessary space by dropping objects in the filegroup, adding additional files to the filegroup, or setting autogrowth on for existing files in the filegroup.
+```
+
+This error occurs when docker does not have enough memory allocated. Can be fixed by going into docker settings and increasing the limit. 
+The disk usage limit is the value that needs to be increased
+> Docker -> settings -> resources -> Disk usage limit
+
+
