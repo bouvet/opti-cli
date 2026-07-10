@@ -30,6 +30,12 @@ npm install
 npm run cli:install
 ```
 
+> **Volta users:** Volta does not automatically create a shortcut in `~/.volta/bin` for packages installed with `npm install -g`. After running `cli:install`, run this once to create a shortcut so Volta can find the `opti` command:
+>
+> ```bash
+> ln -sf ~/.volta/tools/image/node/$(node -v | tr -d 'v')/bin/opti ~/.volta/bin/opti
+> ```
+
 ### Usage
 
 In terminal, run `opti` followed by command.
