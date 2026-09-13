@@ -2,28 +2,35 @@
 
 global.quit = process.exit;
 
-import { Command } from 'commander';
 import { Printer } from '#core/printer.mjs';
 import registerCommands from '#bin/register-commands.mjs';
 import registerEnv from '#bin/register-env.mjs';
+import { OptiCliCommand } from '#core/opti-cli-command.mjs';
+
+
 
 const printer = new Printer('opti-cli');
-const program = new Command();
+const program = new OptiCliCommand();
 
 /**
- * Handles cli starts
+ * Handles the execution and start of the cli
  */
 async function start() {
   program
     .name('opti')
     .description('Team Optimizely CLI tools.')
-    .version('1.0.0');
+    .version('1.0.0')
+    .hook('preAction', async (thisCommand, actionCommand) => {
+      const cmd = /** @type {OptiCliCommand} */ (actionCommand);
+      if (typeof cmd.runPrereqs === 'function') {
+        await cmd.runPrereqs();
+      }
+    });
 
   // register all commands in /commands directory
   await registerCommands();
 
   registerEnv();
-
   program.parse(process.argv);
 }
 

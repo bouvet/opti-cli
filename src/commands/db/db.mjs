@@ -12,7 +12,6 @@ import {
   setConnectionString,
 } from '#helpers/connection-string.mjs';
 import { findAvailablePort } from '#helpers/ports.mjs';
-import { checkPrerequisites } from '#core/prereq/prereq.mjs';
 import checkDotnetExists from '#core/prereq/checks/dotnet.mjs';
 import checkSqlpackageExists from '#core/prereq/checks/sqlpackage.mjs';
 import checkBaseSetup from '#core/prereq/checks/base-setup.mjs';
@@ -59,18 +58,19 @@ baseCommand
     '-p, --port <port>',
     'Specify the port for the database. If no port, it will either default to what the project has used before or find an available one.'
   )
-  .option(
+  .option( // TODO: remove this option?
     '-n, --name <name>',
     'Specify the name of the azuresql database container (defaults to sqledge-<port>)'
   )
-  .option('-k, --kill', 'Kill the whole container stack and related database')
-  .action(async (options) => {
-    await checkPrerequisites([
+  .option('-k, --kill', 'Kill the whole container stack and related database') // TODO: remove this option? Instead use the kill command
+  .prereq(
+    [
       checkDotnetExists,
       checkSqlpackageExists,
       checkBaseSetup,
-    ]);
-
+    ]
+  )
+  .action(async (options) => {
     await handleOptions(options);
 
     const { port, name, kill } = options;
