@@ -1,7 +1,7 @@
 {
   "name": "@bouvet/opti-cli",
-  "version": "1.0.0",
-  "main": "index.mjs",
+  "version": "2.0.0",
+  "main": "./src/cli.mjs",
   "type": "module",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -11,13 +11,19 @@
     "url": "git+ssh://git@github.com/bouvet/opti-cli.git"
   },
   "scripts": {
-    "commands:add": "node ./scripts/generate/command.mjs",
+    "commands:add": "node ./scripts/generate-command.mjs",
     "cli:install": "npm install -g . ",
     "cli:uninstall": "npm uninstall -g @bouvet/opti-cli",
     "publish:jsr": "npx jsr publish"
   },
   "bin": {
-    "opti": "index.mjs"
+    "opti": "./src/cli.mjs"
+  },
+  "imports": {
+    "#core/*": "./src/core/*",
+    "#helpers/*": "./src/helpers/*",
+    "#bin/*": "./bin/*",
+    "#cli": "./src/cli.mjs"
   },
   "keywords": [],
   "author": "",
@@ -35,5 +41,6 @@
   },
   "volta": {
     "node": "22.14.0"
-  }
+  },
+  "packageManager": "pnpm@10.23.0+sha512.21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b"
 }

@@ -13,7 +13,7 @@ declare global {
 
   namespace NodeJS {
     interface Process {
-      opti?: {
+      opti: {
         projectConfig: ProjectConfig;
         constants: {
           defaultDBPort: number
