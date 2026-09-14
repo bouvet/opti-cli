@@ -40,7 +40,7 @@ export async function handleAppSettingsFilePathSelect() {
   const selectedAppsettingsPath = await select({
     message: 'What appsettings do you want to use?',
     choices: appsettings.map((appsettingsPath) => ({
-      name: appsettingsPath.split(path.basename(process.cwd()))[1],
+      name: appsettingsPath.split("/").at(-1),
       value: appsettingsPath,
     })),
   });

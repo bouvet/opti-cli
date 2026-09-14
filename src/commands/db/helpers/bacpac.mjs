@@ -107,7 +107,7 @@ export async function handleBacpacFileSelect() {
   const selectedBacpacFile = await select({
     message: 'What .bacpac do you want to use?',
     choices: bacpacFiles.map((filePath) => ({
-      name: filePath.split(process.cwd()).at(-1),
+      name: filePath.split("/").at(-1),
       value: filePath,
     })),
   });
