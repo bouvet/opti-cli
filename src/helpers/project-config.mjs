@@ -6,43 +6,12 @@ import { Printer } from '#core/printer.mjs';
 const printer = new Printer('Project config');
 const cwd = process.cwd();
 
-const projectConfig = {
-  findConfig: findProjectConfigFile,
+export const projectConfig = {
   getConfig: getProjectConfig,
   createConfig: createProjectConfig
 }
 
-/**
- * Recursively searches for the project.json file by traversing up the directory tree
- * @param {string} startDir - Directory to start searching from
- * @returns {{filePath: string, rootPath: string}|null} - Path to project.json and project root path, or null if not found
- */
-function findProjectConfigFile(startDir = cwd) {
-  let currentDir = startDir;
 
-  // Traverse up the directory tree
-  while (true) {
-    const projectFilePath = path.join(currentDir, '.opti', 'project.json');
-
-    if (fs.existsSync(projectFilePath)) {
-      return {
-        filePath: projectFilePath,
-        rootPath: currentDir,
-      };
-    }
-
-    // Get parent directory
-    const parentDir = path.dirname(currentDir);
-
-    // If we're at the root (parent is same as current)
-    if (parentDir === currentDir) {
-      return null;
-    }
-
-    // Move up to parent
-    currentDir = parentDir;
-  }
-}
 
 /**
  * Gets the current working projects projects.json entry
@@ -56,11 +25,6 @@ export function getProjectConfig() {
     return;
   }
 
-  // printer.error('Cannot find the project config file!');
-  // printer.help(
-  //   'Have you ran the general setup using <opti init> in the root of the project?'
-  // );
-  // quit(1);
   const projectFile = fs.readFileSync(projectInfo.filePath, 'utf8');
   try {
     return JSON.parse(projectFile);
@@ -68,30 +32,6 @@ export function getProjectConfig() {
     printer.error('Failed to parse project config file!', error.message);
     quit(1);
   }
-
-  // if (!projectFile) {
-  //   printer.error('Project config file exists but is empty!');
-  //   printer.help(
-  //     'Have you ran the general setup using <opti init> in the root of the project?'
-  //   );
-  //   quit(1);
-  // }
-
-  // const projectsPath =
-  //   process.opti.projectConfig.PROJECT_ROOT_PATH + '/.opti/project.json';
-  // const projectFile = fs.readFileSync(projectsPath, 'utf8');
-
-  // if (!projectFile) {
-  //   printer.error('Cannot find the given projects config!');
-  //   printer.help(
-  //     'Have you ran the general setup using <opti init> in the root of the project?'
-  //   );
-  //   quit(1);
-  // }
-
-  // const project = JSON.parse(projectFile || '{}');
-
-  // return project;
 }
 
 /**
@@ -122,5 +62,38 @@ export function ensureProjectConfigExist() {
 
   if (!fs.existsSync(projectsPath)) {
     fs.writeFileSync(projectsPath, '');
+  }
+}
+
+
+/**
+ * Recursively searches for the project.json file by traversing up the directory tree
+ * @param {string} startDir - Directory to start searching from
+ * @returns {{filePath: string, rootPath: string}|null} - Path to project.json and project root path, or null if not found
+ */
+function findProjectConfigFile(startDir = cwd) {
+  let currentDir = startDir;
+
+  // Traverse up the directory tree
+  while (true) {
+    const projectFilePath = path.join(currentDir, '.opti', 'project.json');
+
+    if (fs.existsSync(projectFilePath)) {
+      return {
+        filePath: projectFilePath,
+        rootPath: currentDir,
+      };
+    }
+
+    // Get parent directory
+    const parentDir = path.dirname(currentDir);
+
+    // If we're at the root (parent is same as current)
+    if (parentDir === currentDir) {
+      return null;
+    }
+
+    // Move up to parent
+    currentDir = parentDir;
   }
 }
