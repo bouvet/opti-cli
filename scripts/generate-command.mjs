@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'path';
 
-const __commandsPath = path.join(process.cwd(), 'commands');
+const __commandsPath = path.join(process.cwd(), '/src/commands');
 
 /**
  * @param {string} name
@@ -9,8 +9,8 @@ const __commandsPath = path.join(process.cwd(), 'commands');
  */
 const createTemplate = (name) =>
   `'use command'
-import program from '../index.mjs';
-import { Printer } from '../core/printer.mjs';
+import program from '#cli';
+import { Printer } from '#core/printer.mjs';
 
 const printer = new Printer("${name}")
 
@@ -33,14 +33,22 @@ function main() {
 
   const template = createTemplate(commandName);
 
-  const newCommandPath = path.join(__commandsPath, `${commandName}.mjs`);
+  const commandDir = path.join(__commandsPath, commandName);
+  const newCommandPath = path.join(commandDir, `${commandName}.mjs`);
 
-  fs.writeFile(newCommandPath, template, (err) => {
+  fs.mkdir(commandDir, { recursive: true }, (err) => {
     if (err) {
       errorMessage(err);
-    } else {
-      console.log(`✅ Command created successfully!`);
+      return;
     }
+
+    fs.writeFile(newCommandPath, template, (err) => {
+      if (err) {
+        errorMessage(err);
+      } else {
+        console.log(`✅ Command created successfully!`);
+      }
+    });
   });
 }
 
