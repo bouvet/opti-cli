@@ -8,7 +8,7 @@ const printer = new Printer("opti-cli")
 
 program
   .command("clean")
-  .description('Generated command')
+  .description('Manually removes build output and restores packages and re-builds')
   .prereq([checkIsDotnetProject])
   .action(async () => {
     await shell.run("rm -rf obj bin modules");
