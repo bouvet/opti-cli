@@ -46,7 +46,7 @@ function main() {
       if (err) {
         errorMessage(err);
       } else {
-        console.log(`✅ Command created successfully!`);
+        console.log(`✅ Command created!`);
       }
     });
   });
