@@ -1,5 +1,10 @@
 import { spawn, spawnSync } from 'child_process';
 
+const shell = {
+  run: runShellCommand,
+  commandExists
+}
+
 export function runShellCommand(command, args, cwd, options) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {

@@ -6,8 +6,8 @@ import { Printer } from '#core/printer.mjs';
 import { searchFilesRecursive } from '#helpers/files.mjs';
 import { runShellCommand } from '#helpers/shell-command.mjs';
 import checkDotnetExists from '#core/prereq/checks/dotnet.mjs';
-import { ensureDbIsRunning } from '../db/services.mjs';
 import { select } from '@inquirer/prompts';
+import { docker } from '#helpers/docker.mjs';
 
 const printer = new Printer('watch');
 
@@ -16,7 +16,7 @@ program
   .description('Run dotnet watch with a specific profile from launchsettings')
   .prereq([checkDotnetExists])
   .action(async () => {
-    await ensureDbIsRunning();
+    await docker.ensureDockerDatabaseRunning();
 
     // const currentDir = process.cwd();
     const launchSettingsFileName = 'launchSettings.json';

@@ -5,6 +5,25 @@ import { Printer } from '#core/printer.mjs';
 const execAsync = promisify(exec);
 const printer = new Printer('');
 
+const ports = {
+  isAvailable: isPortAvailable,
+  findAvailable: findAvailablePort
+}
+
+/**
+ * Checks connection to given port, if it's busy, it adds 1 to the port (ex. 1433 -> 1434)
+ * @param {number} startPort
+ * @returns {Promise<number>}
+ */
+export async function findAvailablePort(startPort) {
+  let port = startPort;
+  while (!(await isPortAvailable(port))) {
+    port++;
+  }
+  return port;
+}
+
+
 /**
  * Checks if a given port is available
  * @param {number} port
@@ -40,15 +59,3 @@ export async function isPortAvailable(port) {
   }
 }
 
-/**
- * Checks connection to given port, if it's busy, it adds 1 to the port (ex. 1433 -> 1434)
- * @param {number} startPort
- * @returns {Promise<number>}
- */
-export async function findAvailablePort(startPort) {
-  let port = startPort;
-  while (!(await isPortAvailable(port))) {
-    port++;
-  }
-  return port;
-}

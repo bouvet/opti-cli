@@ -8,8 +8,9 @@ baseCommand
   .alias('start')
   .description('Start the datatbase container stack')
   .action(async () => {
+    printer.info('Starting database and containers');
     await runShellCommand(
       `docker compose -p ${process.opti.projectConfig.PROJECT_NAME} -f ./.opti/docker-compose.yml up -d`
     );
-    printer.done('Database is ready!');
+    printer.done('Database started!');
   });

@@ -4,6 +4,15 @@ import { fileURLToPath } from 'url';
 
 const cwd = process.cwd();
 
+const files = {
+  getFile,
+  writeFile,
+  appendFile,
+  listDir,
+  createDir,
+  searchFilesRecursive
+}
+
 export function getFile(pathFromRoot, fileName) {
   try {
     return [
@@ -65,7 +74,7 @@ export function createDir(path) {
  *
  * @param {string} directory
  * @param {string} targetFile
- * @param { {useFileExtension?: boolean, relativePath?: boolean, ignoreDirectories?: Array<string>} } [options]
+ * @param { {useFileExtension?: boolean, relativePath?: boolean, ignoreDirectories?: Array<string>, fuzzy?: boolean} } [options]
  * @returns {string[]}
  */
 export function searchFilesRecursive(
@@ -75,9 +84,15 @@ export function searchFilesRecursive(
     useFileExtension: false,
     relativePath: false,
     ignoreDirectories: [],
+    fuzzy: false,
   }
 ) {
-  const { useFileExtension, relativePath, ignoreDirectories = [] } = options;
+  const {
+    useFileExtension,
+    relativePath,
+    ignoreDirectories = [],
+    fuzzy = false,
+  } = options;
 
   const entries = readdirSync(directory, { withFileTypes: true }).filter(
     (item) =>
@@ -91,9 +106,11 @@ export function searchFilesRecursive(
 
     const isMatch =
       entry.isFile() &&
-      (useFileExtension
-        ? entry.name.endsWith(targetFile)
-        : entry.name === targetFile);
+      (fuzzy
+        ? entry.name.includes(targetFile)
+        : useFileExtension
+          ? entry.name.endsWith(targetFile)
+          : entry.name === targetFile);
 
     if (isMatch) {
       results.push(

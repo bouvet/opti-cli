@@ -1,6 +1,6 @@
 'use command';
 
-import { exportBacpac } from '../../core/bacpac.mjs';
+import { exportBacpac } from './helpers/bacpac.mjs';
 import baseCommand, { printer } from './db.mjs';
 
 baseCommand

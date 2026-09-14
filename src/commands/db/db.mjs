@@ -6,21 +6,17 @@ import { createProjectConfig } from '#helpers/project-config.mjs';
 import {
   createDockerComposeFile,
   generateDBDockerCompose,
-} from '#helpers/docker.mjs';
+} from './helpers/docker.mjs';
 import {
   createConnectionString,
   setConnectionString,
-} from '#helpers/connection-string.mjs';
-import { findAvailablePort } from '#helpers/ports.mjs';
+} from './helpers/connection-string.mjs';
+import { findAvailablePort } from './helpers/ports.mjs';
 import checkDotnetExists from '#core/prereq/checks/dotnet.mjs';
 import checkSqlpackageExists from '#core/prereq/checks/sqlpackage.mjs';
 import checkBaseSetup from '#core/prereq/checks/base-setup.mjs';
-
-import {
-  handleAppSettingsFilePathSelect,
-  handleBacpacFileSelect,
-  handleBacpacImport,
-} from './services.mjs';
+import { handleBacpacFileSelect, handleBacpacImport } from './helpers/bacpac.mjs';
+import { handleAppSettingsFilePathSelect } from './helpers/appsettings.mjs';
 
 export const printer = new Printer('db');
 
@@ -62,7 +58,6 @@ baseCommand
     '-n, --name <name>',
     'Specify the name of the azuresql database container (defaults to sqledge-<port>)'
   )
-  .option('-k, --kill', 'Kill the whole container stack and related database') // TODO: remove this option? Instead use the kill command
   .prereq(
     [
       checkDotnetExists,
@@ -73,7 +68,7 @@ baseCommand
   .action(async (options) => {
     await handleOptions(options);
 
-    const { port, name, kill } = options;
+    const { port, name } = options;
 
     printer.group(
       printer.env('Port', port),
@@ -114,9 +109,8 @@ baseCommand
       appSettingsPath: selectedAppsettingsPath,
     });
 
-    const didImport = await handleBacpacImport(name, kill);
+    const didImport = await handleBacpacImport(name);
 
-    printer.done('Database is ready!');
 
     if (didImport) {
       printer.neutral(
@@ -127,6 +121,8 @@ baseCommand
         'Run <opti db up (or start)> in project root to start the database container, <opti db down (or stop)> to stop it and <opti db kill> to permanently remove it.'
       );
     }
+
+    printer.done('Database is ready!');
   });
 
 export default baseCommand;

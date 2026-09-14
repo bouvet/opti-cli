@@ -6,6 +6,12 @@ import { Printer } from '#core/printer.mjs';
 const printer = new Printer('Project config');
 const cwd = process.cwd();
 
+const projectConfig = {
+  findConfig: findProjectConfigFile,
+  getConfig: getProjectConfig,
+  createConfig: createProjectConfig
+}
+
 /**
  * Recursively searches for the project.json file by traversing up the directory tree
  * @param {string} startDir - Directory to start searching from
