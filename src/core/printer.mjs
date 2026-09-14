@@ -85,9 +85,7 @@ export class Printer {
    */
   env(key, value) {
     console.log(
-      Array(15 - key.length)
-        .fill(' ')
-        .join(''),
+      ''.padStart(Math.max(0, 20 - key.length)),
       colors.gray(key),
       colors.gray('⦂'),
       colors.cyan(value)
