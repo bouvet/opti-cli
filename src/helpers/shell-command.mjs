@@ -1,6 +1,6 @@
 import { spawn, spawnSync } from 'child_process';
 
-const shell = {
+export const shell = {
   run: runShellCommand,
   commandExists
 }
