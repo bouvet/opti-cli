@@ -105,8 +105,7 @@ baseCommand
       port,
       name,
       bacpac: selectedBacpacFilePath,
-      connectionString,
-      appSettingsPath: selectedAppsettingsPath,
+      connectionString
     });
 
     const didImport = await handleBacpacImport(name);

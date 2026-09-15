@@ -13,7 +13,7 @@ export const bacpac = {
   handleImport: handleBacpacImport,
   export: exportBacpac,
   import: importBacpac,
-  files: () => console.log("files"), // TODO: finds the current project bacpac files
+  select: handleBacpacFileSelect
 }
 
 export async function exportBacpac(
