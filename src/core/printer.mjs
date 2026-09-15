@@ -33,6 +33,19 @@ export class Printer {
   }
 
   /**
+   * General warning message
+   * @param {string} title
+   * @param {string} message
+   */
+  warning(title, message) {
+    console.log(
+      colors.yellow('⚠'),
+      colors.yellow(title),
+      colors.gray(message)
+    );
+  }
+
+  /**
    * Neutral ">" log
    * @param {string} message
    */
@@ -110,7 +123,7 @@ export class Printer {
    */
   error(...args) {
     console.log(
-      `❌ `,
+      colors.red(`✖`),
       colors.red(args[0]),
       args[1] ? '\n' + colors.gray(args[1].stack || args[1]) : '',
       args[2] ? '\n\n' + args.splice(2).join('\n') : ''
