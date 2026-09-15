@@ -11,4 +11,14 @@ program
     printer.info(
       `Commands are working! Current working directory: ${process.cwd()}`
     );
+
+    printer.info("info")
+    printer.warning("warning", "message")
+    printer.help("help")
+    printer.neutral("neutral")
+    printer.path("path", "path")
+    printer.success("success")
+    printer.env("env", "value")
+    printer.error("error", new Error("stacktrace"), "additional error details")
+    printer.done("done")
   });
