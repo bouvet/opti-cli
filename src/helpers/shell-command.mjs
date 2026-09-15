@@ -5,9 +5,17 @@ export const shell = {
   commandExists
 }
 
+/**
+ * 
+ * @param {string} command 
+ * @param {string[]} [args] 
+ * @param {string} [cwd] 
+ * @param {{stdio?: import('child_process').StdioOptions}} [options] 
+ * @returns 
+ */
 export function runShellCommand(command, args, cwd, options) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
+    const child = spawn(command, args || [], {
       stdio: options?.stdio || 'inherit', // Use 'inherit' to attach stdio to the parent
       shell: true,
       cwd,
