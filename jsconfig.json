@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "module": "NodeNext",
-    "checkJs": true
+    "checkJs": true,
+    "noImplicitAny": false
   },
   "exclude": [
     "node_modules",
