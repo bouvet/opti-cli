@@ -8,119 +8,161 @@ import { runShellCommand } from '#helpers/shell-command.mjs';
 import checkDotnetExists from '#core/prereq/checks/dotnet.mjs';
 import { select } from '@inquirer/prompts';
 import { docker } from '#helpers/docker.mjs';
+import { getProjectConfig } from '#helpers/project-config.mjs';
 
 const printer = new Printer('watch');
 
 program
-  .command('watch')
-  .description('Run dotnet watch with a specific profile from launchsettings')
-  .prereq([checkDotnetExists])
-  .action(async () => {
-    await docker.ensureDockerDatabaseRunning();
+    .command('watch')
+    .description('Run dotnet watch with a specific profile from launchsettings')
+    .prereq([checkDotnetExists])
+    .option(
+        '-p --profile <profile>',
+        'Explicityly run this launch profile, bypassing profile/default selection prompts')
+    .option(
+        '-d --default',
+        'Prompt for a profile and save the selection as the new default for future runs')
+    .action(async (
+        options
+    ) => {
 
-    // const currentDir = process.cwd();
-    const launchSettingsFileName = 'launchSettings.json';
+        const { profile, default: defaultProfile } = options;
 
-    // find launch settings
-    const files = searchFilesRecursive(
-      process.opti.projectConfig?.PROJECT_ROOT_PATH || process.cwd(),
-      launchSettingsFileName,
-      {
-        relativePath: true,
-      }
-    );
+        await docker.ensureDockerDatabaseRunning();
 
-    if (!files || !files.length) {
-      printer.error(`Could not find file with name ${launchSettingsFileName}`);
-      printer.help(
-        `Are you sure there is a file named ${launchSettingsFileName} in the current working directory?`
-      );
-      quit(1);
-    }
+        // const currentDir = process.cwd();
+        const launchSettingsFileName = 'launchSettings.json';
 
-    let launchSettingsPath;
+        // find launch settings
+        const files = searchFilesRecursive(
+            process.opti.projectConfig?.PROJECT_ROOT_PATH || process.cwd(),
+            launchSettingsFileName,
+            {
+                relativePath: true,
+            }
+        );
 
-    if (files.length == 1) {
-      launchSettingsPath = files[0];
-    }
+        if (!files || !files.length) {
+            printer.error(`Could not find file with name ${launchSettingsFileName}`);
+            printer.help(
+                `Are you sure there is a file named ${launchSettingsFileName} in the current working directory?`
+            );
+            quit(1);
+        }
 
-    if (files.length > 1) {
-      launchSettingsPath = await select({
-        message: 'What launch setting do you want to use?',
-        choices: files.map((file) => ({
-          name: file,
-          value: file,
-        })),
-      });
-    }
+        let launchSettingsPath;
 
-    printer.env('launchSetting', launchSettingsPath);
+        if (files.length == 1) {
+            launchSettingsPath = files[0];
+        }
 
-    // Choose profile to run
 
-    let profileToRun;
-    const profiles = await readProfiles(launchSettingsPath);
+        if (files.length > 1) {
+            launchSettingsPath = await select({
+                message: 'What launch setting do you want to use?',
+                choices: files.map((file) => ({
+                    name: file,
+                    value: file,
+                })),
+            });
+        }
 
-    if (!profiles) {
-      printer.error(
-        `Could not find any profiles to use with the launch setting ${launchSettingsPath}`
-      );
-      quit(1);
-    }
+        printer.env('launchSetting', launchSettingsPath);
 
-    if (profiles.length == 1) {
-      profileToRun = profiles[0];
-    }
+        // Choose profile to run
 
-    if (profiles.length > 1) {
-      profileToRun = await select({
-        message: 'What profile do you want to run?',
-        choices: profiles.map((profile) => ({ name: profile, value: profile })),
-      });
-    }
+        let profileToRun;
+        const profiles = await readProfiles(launchSettingsPath);
 
-    runProfile(profileToRun, getCmsRootPath(launchSettingsPath));
+        if (profile) {
+            executeRunProfile(profile, launchSettingsPath)
+            return
+        }
 
-    printer.done(`Running profile "${profileToRun}"`);
-  });
+        const existingDefaultProfile = process.opti.projectConfig.DEFAULT_PROFILE;
+        const runDefault = existingDefaultProfile && !defaultProfile;
+
+        if (runDefault) {
+            executeRunProfile(existingDefaultProfile, launchSettingsPath)
+            return
+        }
+
+        if (!profiles) {
+            printer.error(
+                `Could not find any profiles to use with the launch setting ${launchSettingsPath}`
+            );
+            return
+        }
+
+        if (profiles.length == 1) {
+            profileToRun = profiles[0];
+        }
+
+        if (profiles.length > 1) {
+            profileToRun = await select({
+                message: 'What profile do you want to run?',
+                choices: profiles.map((profile) => ({ name: profile, value: profile })),
+            });
+        }
+
+        if (defaultProfile) {
+            setDefaultProfile(profileToRun)
+        }
+
+        executeRunProfile(profileToRun, launchSettingsPath)
+    });
+
 
 const getCmsRootPath = (path) =>
-  path.split('/Properties/launchSettings')[0] || process.cwd();
+    path.split('/Properties/launchSettings')[0] || process.cwd();
+
+function executeRunProfile(profileToRun, launchSettingsPath) {
+    runProfile(profileToRun, getCmsRootPath(launchSettingsPath));
+    printer.done(`Running profile "${profileToRun}"`);
+}
 
 const runProfile = (profile, cmsRootPath) => {
-  runShellCommand(`cd ${cmsRootPath} && dotnet`, [
-    'watch',
-    `--launch-profile "${profile}"`,
-  ]);
+    runShellCommand(`cd ${cmsRootPath} && dotnet`, [
+        'watch',
+        `--launch-profile "${profile}"`,
+    ]);
 };
 
 const readProfiles = async (filePath) => {
-  try {
-    const launchSettings = await new Promise((resolve) => {
-      fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-          return printer.error(err);
+    try {
+        const launchSettings = await new Promise((resolve) => {
+            fs.readFile(filePath, 'utf8', (err, data) => {
+                if (err) {
+                    return printer.error(err);
+                }
+
+                resolve(data);
+            });
+        });
+
+        if (!launchSettings) {
+            printer.error('No launchsettings found');
+            quit(1);
         }
 
-        resolve(data);
-      });
-    });
+        const profiles = Object.keys(JSON.parse(launchSettings).profiles);
 
-    if (!launchSettings) {
-      printer.error('No launchsettings found');
-      quit(1);
+        if (!profiles) {
+            printer.error('No profiles found in launchsettings');
+            quit(1);
+        }
+
+        return profiles;
+    } catch (error) {
+        printer.error(error);
+        quit(1);
     }
-
-    const profiles = Object.keys(JSON.parse(launchSettings).profiles);
-
-    if (!profiles) {
-      printer.error('No profiles found in launchsettings');
-      quit(1);
-    }
-
-    return profiles;
-  } catch (error) {
-    printer.error(error);
-    quit(1);
-  }
 };
+
+function setDefaultProfile(profile) {
+    const config = getProjectConfig()
+    config.DEFAULT_PROFILE = profile;
+    const configPath = process.opti.projectConfig.PROJECT_ROOT_PATH + '/.opti/project.json';
+
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+}
