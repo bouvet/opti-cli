@@ -91,7 +91,7 @@ export async function handleBacpacImport(containerDbName = undefined, force = fa
 
 export async function handleBacpacFileSelect() {
   const bacpacFiles = searchFilesRecursive(
-    process.cwd() + '/.opti/bacpac',
+    process.opti.projectConfig.PROJECT_ROOT_PATH + '/.opti/bacpac',
     '.bacpac',
     {
       useFileExtension: true,

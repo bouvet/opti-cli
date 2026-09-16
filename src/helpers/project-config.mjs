@@ -2,6 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import registerEnv from '#bin/register-env.mjs';
 import { Printer } from '#core/printer.mjs';
+import { confirm } from '@inquirer/prompts';
+import { optiInitCommand } from '../commands/init/_init.mjs';
+
 
 const printer = new Printer('Project config');
 const cwd = process.cwd();
@@ -15,14 +18,24 @@ export const projectConfig = {
 
 /**
  * Gets the current working projects projects.json entry
- * @returns {ProjectConfig | undefined}
+ * @returns {Promise<ProjectConfig | undefined>}
  */
-export function getProjectConfig() {
-  const projectInfo = findProjectConfigFile();
+export async function getProjectConfig() {
+  let projectInfo = findProjectConfigFile();
 
   if (!projectInfo) {
     printer.info('No config found.');
-    return;
+    const createConfig = await confirm({
+      message: 'Do you want to init a .opti config in this directory?',
+    })
+
+    if (createConfig) {
+      optiInitCommand();
+
+      projectInfo = findProjectConfigFile();
+    } else {
+      quit(1);
+    }
   }
 
   const projectFile = fs.readFileSync(projectInfo.filePath, 'utf8');
@@ -38,11 +51,11 @@ export function getProjectConfig() {
  * Create a new projects.json file
  * @param {{ port: string, name: string, bacpac: string, connectionString: string }} param0
  */
-export function createProjectConfig({ port, name, bacpac, connectionString }) {
+export async function createProjectConfig({ port, name, bacpac, connectionString }) {
   /** @type {ProjectConfig} */
   const projectConfig = {
     PROJECT_ROOT_PATH: cwd,
-    PROJECT_NAME: path.basename(process.cwd()).toLowerCase(),
+    PROJECT_NAME: path.basename(process.cwd()).toLowerCase().replace(".", "-"),
     BACPAC_PATH: bacpac,
     DB_NAME: bacpac.split('/').at(-1).split('.')[0],
     DB_CONTAINER_NAME: name,
@@ -50,10 +63,10 @@ export function createProjectConfig({ port, name, bacpac, connectionString }) {
     CONNECTION_STRING: connectionString,
   };
 
-  const projectsPath = cwd + '/.opti/project.json';
+  const projectsPath = process.opti.projectConfig.PROJECT_ROOT_PATH + '/.opti/project.json';
 
   fs.writeFileSync(projectsPath, JSON.stringify(projectConfig, null, 2));
-  registerEnv();
+  await registerEnv();
 }
 
 export function ensureProjectConfigExist() {
@@ -72,10 +85,13 @@ export function ensureProjectConfigExist() {
  * @returns {{filePath: string, rootPath: string}|null} - Path to project.json and project root path, or null if not found
  */
 function findProjectConfigFile(startDir = cwd) {
+  const maxTraversal = 4;
+  let traversalCount = 0;
   let currentDir = startDir;
 
+
   // Traverse up the directory tree
-  while (true) {
+  while (traversalCount < maxTraversal) {
     const projectFilePath = path.join(currentDir, '.opti', 'project.json');
 
     if (fs.existsSync(projectFilePath)) {
@@ -95,5 +111,8 @@ function findProjectConfigFile(startDir = cwd) {
 
     // Move up to parent
     currentDir = parentDir;
+    traversalCount++;
   }
+
+  return null;
 }

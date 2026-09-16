@@ -14,7 +14,6 @@ import {
 import { findAvailablePort } from './helpers/ports.mjs';
 import checkDotnetExists from '#core/prereq/checks/dotnet.mjs';
 import checkSqlpackageExists from '#core/prereq/checks/sqlpackage.mjs';
-import checkBaseSetup from '#core/prereq/checks/base-setup.mjs';
 import { handleBacpacFileSelect, handleBacpacImport } from './helpers/bacpac.mjs';
 import { handleAppSettingsFilePathSelect } from './helpers/appsettings.mjs';
 
@@ -62,7 +61,6 @@ baseCommand
     [
       checkDotnetExists,
       checkSqlpackageExists,
-      checkBaseSetup,
     ]
   )
   .action(async (options) => {
@@ -101,7 +99,7 @@ baseCommand
 
     createDockerComposeFile({ dockerComposeFile });
 
-    createProjectConfig({
+    await createProjectConfig({
       port,
       name,
       bacpac: selectedBacpacFilePath,
