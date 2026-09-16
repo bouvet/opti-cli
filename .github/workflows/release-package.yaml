@@ -23,3 +23,11 @@ jobs:
       - run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - run: pnpm pack
+      - run: mv bouvet-opti-cli-*.tgz opti-cli.tgz
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: opti-cli.tgz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
