@@ -2,25 +2,15 @@
 
 A collection of CLI commands to simplify workflow at Team Opti, working with Optimizely.
 
-## Features
+## Installation
+Either clone the repository and install it from there or install it directly from releases.
 
-- **Optimized Commands**: Predefined commands tailored for Team Optimizely workflows.
-- **Test Environment**: A `testenv` folder (ignored by version control) where you can replicate an Optimizely environment to test the tool safely.
-- **Extensible**: Built with [Commander.js](https://github.com/tj/commander.js), making it easy to add and customize commands.
+### From releases
+```bash
+pnpm add -g https://github.com/bouvet/opti-cli/archive/refs/tags/v2.0.1.tar.gz
+```
 
-## Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org)
-- [npm](https://www.npmjs.com/)
-
-Some scripts require dotnet to run:
-
-- [Dotnet](https://dotnet.microsoft.com/en-us/download)
-
-### Installation
-
+### From repository
 Clone the repository and install dependencies:
 
 ```bash
@@ -30,22 +20,9 @@ npm install
 npm run cli:install
 ```
 
-### Usage
+## Usage
 
-In terminal, run `opti` followed by command.
-
-### Commands
-
-| Command           | Description                                                                                     | Options                                                                                     |
-| ----------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `opti db`         | Configure project's connection string, create `docker-compose.yml`, and import `.bacpac` files. | `-p, --port <port>`: Specify the port for the database (default `1433:1433`).               |
-|                   |                                                                                                 | `-n, --name <name>`: Specify the name of the database container (default `sqledge-<port>`). |
-|                   |                                                                                                 | `-k, --kill`: Kill the entire container stack and related database.                         |
-| `opti db up`      | Start the database container stack in detached mode using `docker compose up`.                  | N/A                                                                                         |
-| `opti db down`    | Stop the database container stack using `docker compose down`.                                  | N/A                                                                                         |
-| `opti db import`  | Import a `.bacpac` file, destroying the existing database and re-importing it.                  | N/A                                                                                         |
-| `opti sqlpackage` | Install sqlpackage with dotnet cli and add it to path                                           | `--uninstall`: Uninstalls sqlpackage                                                        |
-| `opti watch`      | Starts `dotnet watch` with the ability to choose which launch profile to run.                   | N/A                                                                                         |
+In terminal, run `opti` followed by command. TO get a list of commands, run `opti -h`
 
 # For Developers
 
@@ -55,11 +32,10 @@ To exit excecution early, use the global `quit()` function. This is the same as 
 
 ### Adding a command
 
-Adding a command can be done with this snippet which generates a new one from a template.
+Adding a command can be done by running the below command which generates a new one from a template.
 
 ```bash
 npm run commands:add <name of command>
-
 ```
 
 ## Known Errors When Importing Database
