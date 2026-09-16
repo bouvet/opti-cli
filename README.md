@@ -7,8 +7,17 @@ Either clone the repository and install it from there or install it directly fro
 
 ### From releases
 
+Download latest version:
 ```bash
 pnpm add -g https://github.com/bouvet/opti-cli/releases/latest/download/opti-cli.tgz
+```
+
+Download specific version:
+```bash
+pnpm add -g https://github.com/bouvet/opti-cli/archive/refs/tags/[version].tar.gz
+
+#example:
+pnpm add -g https://github.com/bouvet/opti-cli/archive/refs/tags/v2.0.5.tar.gz
 ```
 
 ### From repository
@@ -21,7 +30,7 @@ pnpm run cli:install
 
 ## Usage
 
-In terminal, run `opti` followed by command. TO get a list of commands, run `opti -h`
+In terminal, run `opti` followed by command. To get a list of commands, run `opti -h`
 
 # For Developers
 
