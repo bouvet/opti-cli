@@ -1,28 +1,29 @@
 declare global {
-  var quit: typeof process.exit;
+    var quit: typeof process.exit;
 
-  interface ProjectConfig {
-    PROJECT_NAME: string,
-    BACPAC_PATH: string;
-    DB_NAME: string;
-    DB_CONTAINER_NAME: string;
-    DB_PORT: string;
-    CONNECTION_STRING: string;
-    PROJECT_ROOT_PATH: string;
-  }
-
-  namespace NodeJS {
-    interface Process {
-      opti: {
-        projectConfig: ProjectConfig;
-        constants: {
-          defaultDBPort: number
-        };
-      };
+    interface ProjectConfig {
+        PROJECT_NAME: string,
+        BACPAC_PATH: string;
+        DB_NAME: string;
+        DB_CONTAINER_NAME: string;
+        DB_PORT: string;
+        CONNECTION_STRING: string;
+        PROJECT_ROOT_PATH: string;
+        DEFAULT_PROFILE?: string;
     }
-  }
+
+    namespace NodeJS {
+        interface Process {
+            opti: {
+                projectConfig: ProjectConfig;
+                constants: {
+                    defaultDBPort: number
+                };
+            };
+        }
+    }
 }
 
 
 
-export {};
+export { };
