@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 import path from 'node:path';
 import { runShellCommand } from '#helpers/shell-command.mjs';
 import { Printer } from '#core/printer.mjs';
-import { writeFile } from '#helpers/files.mjs';
+import { writeFile, writeFileAbsolute } from '#helpers/files.mjs';
 
 const docker = {
   waitForContainerLogString,
@@ -134,7 +134,7 @@ export function createDockerComposeFile(
   { dockerComposeFile },
   printer = new Printer('docker')
 ) {
-  const [error] = writeFile('.opti', 'docker-compose.yml', dockerComposeFile);
+  const [error] = writeFileAbsolute(process.opti.projectConfig.PROJECT_ROOT_PATH + "/.opti", 'docker-compose.yml', dockerComposeFile);
 
   if (error) {
     printer.error(

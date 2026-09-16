@@ -2,6 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import registerEnv from '#bin/register-env.mjs';
 import { Printer } from '#core/printer.mjs';
+import { confirm } from '@inquirer/prompts';
+import { optiInitCommand } from '../commands/init/_init.mjs';
+
 
 const printer = new Printer('Project config');
 const cwd = process.cwd();
@@ -15,7 +18,7 @@ export const projectConfig = {
 
 /**
  * Gets the current working projects projects.json entry
- * @returns {ProjectConfig | undefined}
+ * @returns {Promise<ProjectConfig | undefined>}
  */
 export function getProjectConfig() {
     const projectInfo = findProjectConfigFile();

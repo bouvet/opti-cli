@@ -30,7 +30,7 @@ async function start() {
   // register all commands in /commands directory
   await registerCommands();
 
-  registerEnv();
+  await registerEnv();
   program.parse(process.argv);
 }
 

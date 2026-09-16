@@ -39,6 +39,21 @@ export function writeFile(pathFromRoot, fileToWriteTo, toWrite) {
   }
 }
 
+export function writeFileAbsolute(absolutePath, fileToWriteTo, toWrite) {
+  try {
+    return [
+      null,
+      fs.writeFileSync(
+        absolutePath + '/' + fileToWriteTo,
+        toWrite,
+        'utf-8'
+      ),
+    ];
+  } catch (error) {
+    return [error];
+  }
+}
+
 export function appendFile(pathFromRoot, fileToAppendTo, toAppend) {
   try {
     return [
