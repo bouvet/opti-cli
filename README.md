@@ -6,18 +6,17 @@ A collection of CLI commands to simplify workflow at Team Opti, working with Opt
 Either clone the repository and install it from there or install it directly from releases.
 
 ### From releases
+
 ```bash
 pnpm add -g https://github.com/bouvet/opti-cli/archive/refs/tags/v2.0.1.tar.gz
 ```
 
 ### From repository
-Clone the repository and install dependencies:
+Clone the repository, install dependencies and install the cli.
 
 ```bash
-git clone git@github.com:bouvet/opti-cli.git
-cd opti-cli
-npm install
-npm run cli:install
+pnpm install
+pnpm run cli:install
 ```
 
 ## Usage
