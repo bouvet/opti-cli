@@ -6,20 +6,19 @@ import { spawn } from 'child_process';
 import baseCommand, { printer } from './db.mjs';
 import { bacpac } from './helpers/bacpac.mjs';
 
-const tablesToRemove = ['dbo.SecurityReportTo'];
+const tablesToRemove = ['dbo.SecurityReportTo', 'dbo.BVN.NotFoundRequests'];
 
 baseCommand
   .command('clean')
   .description('Creates a copy of a .bacpac file and removes redundant tables, possibly saving gigabytes of space when imported')
   .option(
     '-t, --tables <tables...>',
-    `Override what tables to remove. The defaults are: ${tablesToRemove.join(", ")}`
+    `Append what tables to remove. The defaults are: ${tablesToRemove.join(", ")}`
   )
   .action(async (options) => {
     const { tables } = options;
 
     if (tables?.length) {
-      tablesToRemove.splice(0);
       tables.forEach(t => {
         tablesToRemove.push(t);
       });
