@@ -8,7 +8,7 @@ Either clone the repository and install it from there or install it directly fro
 ### From releases
 
 ```bash
-pnpm add -g https://github.com/bouvet/opti-cli/archive/refs/tags/v2.0.1.tar.gz
+pnpm add -g https://github.com/bouvet/opti-cli/releases/latest/download/opti-cli.tgz
 ```
 
 ### From repository
