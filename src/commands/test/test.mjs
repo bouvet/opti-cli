@@ -18,7 +18,7 @@ program
     printer.neutral("neutral")
     printer.path("path", "path")
     printer.success("success")
-    printer.env("env", "value")
+    printer.env({ "env": "value" })
     printer.error("error", new Error("stacktrace"), "additional error details")
     printer.done("done")
   });

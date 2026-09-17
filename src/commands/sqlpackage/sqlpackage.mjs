@@ -21,7 +21,7 @@ program
       await runShellCommand(
         'dotnet',
         ['tool', 'uninstall', '-g', 'microsoft.sqlpackage'],
-        process.cwd()
+        { cwd: process.cwd() }
       );
       quit(0);
     }
@@ -31,7 +31,7 @@ program
     await runShellCommand(
       'dotnet',
       ['tool', 'install', '-g', 'microsoft.sqlpackage'],
-      process.cwd()
+      { cwd: process.cwd() }
     );
 
     printer.info('Adding sqlpackage to path...');

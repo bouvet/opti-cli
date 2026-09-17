@@ -4,8 +4,14 @@ export default async function registerEnv() {
   // @ts-ignore
   process.opti = {};
 
+  const config = await getProjectConfig();
+
+  if (!config) {
+    quit(0);
+  }
+
   process.opti = {
-    projectConfig: await getProjectConfig(),
+    projectConfig: config,
     constants: {
       defaultDBPort: 1433,
     },

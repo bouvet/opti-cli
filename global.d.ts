@@ -9,6 +9,7 @@ declare global {
         DB_PORT: string;
         CONNECTION_STRING: string;
         PROJECT_ROOT_PATH: string;
+        OPTI_FOLDER: string;
         DEFAULT_PROFILE?: string;
     }
 

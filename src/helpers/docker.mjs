@@ -4,7 +4,7 @@ import { runShellCommand } from "./shell-command.mjs";
 const printer = new Printer("docker");
 
 export const docker = {
-  ensureDockerDatabaseRunning: ensureDbIsRunning
+  ensureDbIsRunning
 }
 
 
@@ -16,7 +16,7 @@ async function ensureDbIsRunning() {
     return;
   }
 
-  await runShellCommand('opti', ['db', 'up'], projectRoot);
+  await runShellCommand('opti', ['db', 'up', '-i'], { cwd: projectRoot, ignoreFailure: true });
 
   printer.group();
 }

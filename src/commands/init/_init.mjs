@@ -6,10 +6,10 @@ import {
   writeFile,
 } from '#helpers/files.mjs';
 import { Printer } from '#core/printer.mjs';
+import { projectConfig } from '#helpers/project-config.mjs';
 
 const cwd = process.cwd();
 const printer = new Printer('init');
-
 
 export function optiInitCommand() {
   const missingOptiFolder = listDir(cwd + '/.opti')[0] !== null;
@@ -21,15 +21,6 @@ export function optiInitCommand() {
   )[1];
   const missingGitignore = !gitignore;
 
-  if (
-    !missingOptiFolder &&
-    !missingBacpacFolder &&
-    !missingProjectsConfig &&
-    !missingGitignore
-  ) {
-    return;
-  }
-
   if (missingOptiFolder) {
     createDir(cwd + '/.opti');
     printer.info('Created .opti directory in app root');
@@ -38,11 +29,6 @@ export function optiInitCommand() {
   if (missingBacpacFolder) {
     createDir(cwd + '/.opti/bacpac');
     printer.info('Created bacpac directory');
-  }
-
-  if (missingProjectsConfig) {
-    writeFile('/.opti', 'project.json', JSON.stringify({}));
-    printer.info('Created project.json config file');
   }
 
   if (missingGitignore) {
@@ -56,16 +42,15 @@ export function optiInitCommand() {
     }
   }
 
-  setProjectsRootPath();
-}
-
-function setProjectsRootPath() {
-  const [, content] = getFile('.opti', 'project.json');
-  const config = content ? JSON.parse(content) : {};
-
-  if (!config.PROJECT_ROOT_PATH) {
-    config.PROJECT_ROOT_PATH = cwd;
-    writeFile('/.opti', 'project.json', JSON.stringify(config, null, 2));
-    printer.info('Set PROJECT_ROOT_PATH in project.json');
+  if (missingProjectsConfig) {
+    writeFile('/.opti', 'project.json', JSON.stringify({}));
   }
+
+  projectConfig.setValues({
+    PROJECT_ROOT_PATH: cwd,
+    OPTI_FOLDER: cwd + "/.opti"
+  })
+
+  printer.info('Created project.json config file');
+
 }

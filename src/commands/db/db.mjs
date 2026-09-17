@@ -2,7 +2,6 @@
 import path from 'node:path';
 import program from '#cli';
 import { Printer } from '#core/printer.mjs';
-import { createProjectConfig } from '#helpers/project-config.mjs';
 import {
   createDockerComposeFile,
   generateDBDockerCompose,
@@ -16,6 +15,10 @@ import checkDotnetExists from '#core/prereq/checks/dotnet.mjs';
 import checkSqlpackageExists from '#core/prereq/checks/sqlpackage.mjs';
 import { handleBacpacFileSelect, handleBacpacImport } from './helpers/bacpac.mjs';
 import { handleAppSettingsFilePathSelect } from './helpers/appsettings.mjs';
+import { projectConfig } from '#helpers/project-config.mjs';
+import registerEnv from '#bin/register-env.mjs';
+import { runShellCommand } from '#helpers/shell-command.mjs';
+import checkConfigEntriesPresent from '#core/prereq/checks/config-entries-present.mjs';
 
 export const printer = new Printer('db');
 
@@ -61,6 +64,7 @@ baseCommand
     [
       checkDotnetExists,
       checkSqlpackageExists,
+      checkConfigEntriesPresent(['PROJECT_ROOT_PATH', 'OPTI_FOLDER'])
     ]
   )
   .action(async (options) => {
@@ -69,10 +73,11 @@ baseCommand
     const { port, name } = options;
 
     printer.group(
-      printer.env('Port', port),
-      printer.env('DB Name', name),
-      printer.env('Project', path.basename(process.cwd())),
-      printer.env('cwd', process.cwd())
+      printer.env({
+        Port: port,
+        'DB name': name,
+        Project: path.basename(process.cwd()),
+      }),
     );
 
     const selectedBacpacFilePath = await handleBacpacFileSelect();
@@ -99,7 +104,7 @@ baseCommand
 
     createDockerComposeFile({ dockerComposeFile });
 
-    await createProjectConfig({
+    await setProjectDatabaseConfigs({
       port,
       name,
       bacpac: selectedBacpacFilePath,
@@ -108,18 +113,40 @@ baseCommand
 
     const didImport = await handleBacpacImport(name);
 
+    printer.success('Database setup successful!');
 
     if (didImport) {
       printer.neutral(
-        'Database is running in Docker! In the future you can run <opti db up (or start)> in project root to start the database, <opti db down (or stop)> to stop it and <opti db kill> to permanently remove it.'
+        'Database is now running'
       );
     } else {
-      printer.neutral(
-        'Run <opti db up (or start)> in project root to start the database container, <opti db down (or stop)> to stop it and <opti db kill> to permanently remove it.'
-      );
+      await runShellCommand('opti db up');
     }
 
-    printer.done('Database is ready!');
+    printer.neutral(
+      'Run <opti db start> to start, <opti db stop> to stop it and <opti db kill> to permanently remove it.'
+    );
   });
 
+/** 
+ * Create a new projects.json file
+ * @param {{ port: string, name: string, bacpac: string, connectionString: string }} param0
+ */
+async function setProjectDatabaseConfigs({ port, name, bacpac, connectionString }) {
+  /** @type {Partial<ProjectConfig>} */
+  const config = {
+    PROJECT_NAME: path.basename(process.cwd()).toLowerCase().replace(".", "-"),
+    BACPAC_PATH: bacpac,
+    DB_NAME: bacpac.split('/').at(-1).split('.')[0],
+    DB_CONTAINER_NAME: name,
+    DB_PORT: port,
+    CONNECTION_STRING: connectionString,
+  };
+
+  projectConfig.setValues(config);
+
+  await registerEnv();
+}
+
 export default baseCommand;
+

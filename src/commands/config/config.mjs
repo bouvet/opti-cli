@@ -8,10 +8,15 @@ const printer = new Printer("config")
 program
   .command("config")
   .description('Lists project config')
-  .action(() => {
-    const config = projectConfig.getConfig();
+  .action(async () => {
+    const config = await projectConfig.getConfig();
+
+    if (!config) {
+      printer.warning("No config found")
+      quit(0)
+    }
 
     printer.group(
-      Object.entries(config).forEach(([k, v]) => printer.env(k, v))
+      printer.env(config)
     );
   });

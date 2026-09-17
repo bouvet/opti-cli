@@ -23,7 +23,7 @@ export async function exportBacpac(
     const sqlpackageCommand = `/Action:Export /TargetFile:"backup-${dbName}.bacpac" \
       /SourceConnectionString:"${connectionString}"`;
 
-    await runShellCommand('sqlpackage', [sqlpackageCommand], process.cwd());
+    await runShellCommand('sqlpackage', [sqlpackageCommand]);
   } catch (error) {
     printer.error('Error during exporting of database', error);
     return;
@@ -66,15 +66,13 @@ async function startImport() {
   const connectionString = `Data Source=localhost,${PORT};Initial Catalog=${DB_NAME};User ID=SA;Password=bigStrongPassword8@;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=${DB_CONTAINER_NAME};Connect Retry Count=1;Connect Retry Interval=10;Command Timeout=30`;
   const sqlpackageCommand = `/Action:Import /SourceFile:"${BACPAC_PATH}" /TargetConnectionString:"${connectionString}"`;
 
-  await runShellCommand('sqlpackage', [sqlpackageCommand], process.cwd());
+  await runShellCommand('sqlpackage', [sqlpackageCommand], { cwd: process.cwd() });
 }
 
-export async function handleBacpacImport(containerDbName = undefined, force = false) {
-  const confirmation =
-    force ||
-    (await confirm({
-      message: 'Do you want to import the .bacpac now? (this will delete the existing database and all its data)',
-    }));
+export async function handleBacpacImport(containerDbName) {
+  const confirmation = await confirm({
+    message: 'Do you want to import the .bacpac now? (this will delete the existing database and all its data)'
+  })
 
   if (!confirmation) {
     return false;

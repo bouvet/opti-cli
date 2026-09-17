@@ -8,8 +8,10 @@ baseCommand
   .alias('stop')
   .description('Stop the datatbase container stac')
   .action(async () => {
+    const { OPTI_FOLDER, PROJECT_NAME } = process.opti.projectConfig;
+
     await runShellCommand(
-      `docker compose -p ${process.opti.projectConfig.PROJECT_NAME} -f ./.opti/docker-compose.yml down`
+      `docker compose -p ${PROJECT_NAME} -f ${OPTI_FOLDER}/docker-compose.yml down`
     );
     printer.done('Database is shut down.');
   });

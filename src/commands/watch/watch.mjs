@@ -8,7 +8,7 @@ import { runShellCommand } from '#helpers/shell-command.mjs';
 import checkDotnetExists from '#core/prereq/checks/dotnet.mjs';
 import { select } from '@inquirer/prompts';
 import { docker } from '#helpers/docker.mjs';
-import { getProjectConfig } from '#helpers/project-config.mjs';
+import { getProjectConfig, projectConfig } from '#helpers/project-config.mjs';
 
 const printer = new Printer('watch');
 
@@ -28,7 +28,7 @@ program
 
         const { profile, default: defaultProfile } = options;
 
-        await docker.ensureDockerDatabaseRunning();
+        await docker.ensureDbIsRunning();
 
         // const currentDir = process.cwd();
         const launchSettingsFileName = 'launchSettings.json';
@@ -66,10 +66,6 @@ program
                 })),
             });
         }
-
-        printer.env('launchSetting', launchSettingsPath);
-
-        // Choose profile to run
 
         let profileToRun;
         const profiles = await readProfiles(launchSettingsPath);
@@ -118,7 +114,9 @@ const getCmsRootPath = (path) =>
 
 function executeRunProfile(profileToRun, launchSettingsPath) {
     runProfile(profileToRun, getCmsRootPath(launchSettingsPath));
-    printer.done(`Running profile "${profileToRun}"`);
+    printer.group(
+        printer.env({ "Running profile": profileToRun })
+    );
 }
 
 const runProfile = (profile, cmsRootPath) => {
@@ -159,10 +157,6 @@ const readProfiles = async (filePath) => {
     }
 };
 
-function setDefaultProfile(profile) {
-    const config = getProjectConfig()
-    config.DEFAULT_PROFILE = profile;
-    const configPath = process.opti.projectConfig.PROJECT_ROOT_PATH + '/.opti/project.json';
-
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+async function setDefaultProfile(profile) {
+    projectConfig.setValues({ DEFAULT_PROFILE: profile })
 }

@@ -35,13 +35,13 @@ export class Printer {
   /**
    * General warning message
    * @param {string} title
-   * @param {string} message
+   * @param {string} [message]
    */
   warning(title, message) {
     console.log(
       colors.yellow('⚠'),
       colors.yellow(title),
-      colors.gray(message)
+      colors.gray(message ?? '')
     );
   }
 
@@ -50,7 +50,7 @@ export class Printer {
    * @param {string} message
    */
   neutral(message) {
-    console.log(' ', colors.gray('>'), colors.gray(message));
+    console.log(' ', colors.gray('|'), colors.gray(message));
   }
 
   path(title, path) {
@@ -58,8 +58,8 @@ export class Printer {
       ' ',
       colors.gray('|'),
       colors.gray(title || ''),
-      colors.gray('→'),
-      colors.gray(path)
+      colors.gray(path ? '→' : ''),
+      colors.gray(path || '')
     );
   }
 
@@ -92,17 +92,23 @@ export class Printer {
   }
 
   /**
-   *
-   * @param {string} key
-   * @param {string} value
+   * Logs a set of key/value pairs, aligning them based on the longest key.
+   * @param {Record<string, any>} entries
    */
-  env(key, value) {
-    console.log(
-      ''.padStart(Math.max(0, 20 - key.length)),
-      colors.gray(key),
-      colors.gray('⦂'),
-      colors.cyan(value)
-    );
+  env(entries) {
+    const keys = Object.keys(entries || {});
+    if (!keys.length) return;
+
+    const width = Math.max(...keys.map((key) => key.length));
+
+    for (const key of keys) {
+      console.log(
+        ''.padStart(width - key.length),
+        colors.gray(key),
+        colors.gray('⌁'),
+        colors.cyan(String(entries[key]))
+      );
+    }
   }
 
   /**

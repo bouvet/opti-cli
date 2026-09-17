@@ -95,7 +95,7 @@ export async function killComposeStack(
   await runShellCommand('docker compose', [
     '-p',
     composeStackName,
-    'down'
+    'down --rmi all --volumes'
   ]);
   printer.success(`Container stack ${composeStackName} killed`);
 }
@@ -134,7 +134,7 @@ export function createDockerComposeFile(
   { dockerComposeFile },
   printer = new Printer('docker')
 ) {
-  const [error] = writeFileAbsolute(process.opti.projectConfig.PROJECT_ROOT_PATH + "/.opti", 'docker-compose.yml', dockerComposeFile);
+  const [error] = writeFileAbsolute(process.opti.projectConfig.OPTI_FOLDER, 'docker-compose.yml', dockerComposeFile);
 
   if (error) {
     printer.error(

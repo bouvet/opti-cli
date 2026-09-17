@@ -36,7 +36,8 @@ baseCommand
       return;
     }
 
-    printer.done(`Clean bacpac created: ${outputPath}`);
+    printer.done(`Backpack cleaned`);
+    printer.path("created at", outputPath);
   });
 
 /**
@@ -54,7 +55,10 @@ export async function cleanBacpac(bacpacPath) {
   const outputBacpac = path.join(dir, `${baseName}_clean.bacpac`);
 
   if (fs.existsSync(workDir) || fs.existsSync(outputBacpac)) {
-    printer.info(`Removing existing output/work files:\n  ${workDir}\n  ${outputBacpac}`);
+    printer.info(`Removing existing output/work files:`);
+    printer.path("workdir", workDir)
+    printer.path("bacpac", outputBacpac)
+
     fs.rmSync(workDir, { recursive: true, force: true });
     fs.rmSync(outputBacpac, { force: true });
   }
@@ -72,14 +76,16 @@ export async function cleanBacpac(bacpacPath) {
       const targetDir = path.join(workDir, 'Data', table);
 
       if (!fs.existsSync(targetDir)) {
-        printer.info(`Table ${table} not found, skipping`);
+        printer.info(`Skipping table`);
+        printer.path(`${table}`, 'not found');
         continue;
       }
 
       tablesRemoved.push(table);
 
-      printer.info(`Deleting ${targetDir}`);
       fs.rmSync(targetDir, { recursive: true, force: true });
+      printer.info(`Deleted table`);
+      printer.path(table)
     }
 
     if (!tablesRemoved.length) {

@@ -9,27 +9,32 @@ export const shell = {
  * 
  * @param {string} command 
  * @param {string[]} [args] 
- * @param {string} [cwd] 
- * @param {{stdio?: import('child_process').StdioOptions}} [options] 
+ * @param {{stdio?: import('child_process').StdioOptions, ignoreFailure?: boolean, cwd?: string}} [options] 
  * @returns 
  */
-export function runShellCommand(command, args, cwd, options) {
+export function runShellCommand(command, args, options) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args || [], {
       stdio: options?.stdio || 'inherit', // Use 'inherit' to attach stdio to the parent
       shell: true,
-      cwd,
+      cwd: options?.cwd,
     });
 
     child.on('error', (err) => {
-      reject(`Error: ${err.message}`);
+      if (options?.ignoreFailure) {
+        resolve([false, `Error: ${err.message}`])
+      }
+      reject([false, `Error: ${err.message}`]);
     });
 
     child.on('exit', (code) => {
       if (code === 0) {
-        resolve();
+        resolve([true]);
       } else {
-        reject(`Run command exited with code ${code}`);
+        if (options?.ignoreFailure) {
+          resolve([false, `Run command exited with code ${code}`]);
+        }
+        reject([false, `Run command exited with code ${code}`]);
       }
     });
   });
