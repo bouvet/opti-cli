@@ -6,8 +6,7 @@ import { Printer } from '#core/printer.mjs';
 import registerCommands from '#bin/register-commands.mjs';
 import registerEnv from '#bin/register-env.mjs';
 import { OptiCliCommand } from '#core/opti-cli-command.mjs';
-
-
+import packageJson from "../package.json" with {type: "json"};
 
 const printer = new Printer('opti-cli');
 const program = new OptiCliCommand();
@@ -19,7 +18,7 @@ async function start() {
   program
     .name('opti')
     .description('Team Optimizely CLI tools.')
-    .version('1.0.0')
+    .version(packageJson.version)
     .hook('preAction', async (thisCommand, actionCommand) => {
       const cmd = /** @type {OptiCliCommand} */ (actionCommand);
       if (typeof cmd.runPrereqs === 'function') {
