@@ -28,7 +28,8 @@ export function setConnectionString(
 
     const appsettings = JSON.parse(appsettingsRaw);
 
-    appsettings['ConnectionStrings']['EPiServerDB'] = connectionString;
+    appsettings.ConnectionStrings ??= {};
+    appsettings.ConnectionStrings.EPiServerDB = connectionString;
 
     fs.writeFileSync(
       selectedAppsettingsPath,
