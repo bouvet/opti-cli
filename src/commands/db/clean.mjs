@@ -6,7 +6,7 @@ import { spawn } from 'child_process';
 import baseCommand, { printer } from './db.mjs';
 import { bacpac } from './helpers/bacpac.mjs';
 
-const tablesToRemove = ['dbo.SecurityReportTo', 'dbo.BVN.NotFoundRequests'];
+const tablesToRemove = ['dbo.SecurityReportTo', 'dbo.BVN.NotFoundRequests', 'dbo.NotFoundHandler.Suggestions'];
 
 baseCommand
   .command('clean')
