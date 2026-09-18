@@ -9,15 +9,15 @@ Either clone the repository and install it from there or install it directly fro
 
 Download latest version:
 ```bash
-pnpm add -g https://github.com/bouvet/opti-cli/releases/latest/download/opti-cli.tgz
+pnpm add -g --force https://github.com/bouvet/opti-cli/releases/latest/download/opti-cli.tgz
 ```
 
 Download specific version:
 ```bash
-pnpm add -g https://github.com/bouvet/opti-cli/archive/refs/tags/[version].tar.gz
+pnpm add -g --force https://github.com/bouvet/opti-cli/archive/refs/tags/[version].tar.gz
 
 #example:
-pnpm add -g https://github.com/bouvet/opti-cli/archive/refs/tags/v2.0.5.tar.gz
+pnpm add -g --force https://github.com/bouvet/opti-cli/archive/refs/tags/v2.0.5.tar.gz
 ```
 
 ### From repository
