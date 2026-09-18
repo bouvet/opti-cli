@@ -20,16 +20,16 @@ async function start() {
     .description('Team Optimizely CLI tools.')
     .version(packageJson.version)
     .hook('preAction', async (thisCommand, actionCommand) => {
+      await registerEnv();
       const cmd = /** @type {OptiCliCommand} */ (actionCommand);
+
       if (typeof cmd.runPrereqs === 'function') {
         await cmd.runPrereqs();
       }
     });
 
-  // register all commands in /commands directory
   await registerCommands();
 
-  await registerEnv();
   program.parse(process.argv);
 }
 
