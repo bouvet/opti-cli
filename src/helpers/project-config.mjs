@@ -4,7 +4,6 @@ import registerEnv from '#bin/register-env.mjs';
 import { Printer } from '#core/printer.mjs';
 import { confirm } from '@inquirer/prompts';
 import { optiInitCommand } from '../commands/init/_init.mjs';
-import { writeFile, writeFileAbsolute } from './files.mjs';
 
 
 const printer = new Printer('Project config');
