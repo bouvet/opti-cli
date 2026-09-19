@@ -6,7 +6,7 @@ import program from "#cli";
 import { Printer } from "#core/printer.mjs";
 
 const printer = new Printer("sqlpackage");
-const addToPathCommand = `cat << \EOF >> ~/.zprofile
+const addToPathCommand = `cat << EOF >> ~/.zprofile
 # Add .NET Core SDK tools
 export PATH="$PATH:/Users/$(whoami)/.dotnet/tools"
 EOF`;

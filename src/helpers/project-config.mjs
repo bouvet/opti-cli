@@ -34,13 +34,13 @@ export async function getProjectConfig() {
 		}
 	}
 
-	// @ts-ignore
+	// @ts-expect-error
 	const projectFile = fs.readFileSync(projectInfo.filePath, "utf8");
 
 	try {
 		return JSON.parse(projectFile);
 	} catch (error) {
-		// @ts-ignore
+		// @ts-expect-error
 		printer.error("Failed to parse project config file!", error.message);
 		quit(1);
 	}

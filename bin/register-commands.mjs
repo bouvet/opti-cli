@@ -16,7 +16,7 @@ export default async function registerCommands() {
 		await processDirectory(commandsDir);
 		return Promise.resolve();
 	} catch (err) {
-		// @ts-ignore
+		// @ts-expect-error
 		console.error(`Error reading commands directory: ${err.message}`);
 		throw err;
 	}

@@ -139,7 +139,7 @@ async function setDatabaseProjectConfig({
 	await projectConfig.setValues({
 		PROJECT_NAME: path.basename(process.cwd()).toLowerCase().replace(".", "-"),
 		BACPAC_PATH: bacpac,
-		// @ts-ignore
+		// @ts-expect-error
 		DB_NAME: bacpac.split("/").at(-1).split(".")[0],
 		DB_CONTAINER_NAME: name,
 		DB_PORT: port,

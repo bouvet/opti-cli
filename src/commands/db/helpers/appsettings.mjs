@@ -9,7 +9,7 @@ export const appsettings = {
 };
 
 export function getAppsettingsFilePaths() {
-	let appsettings = searchFilesRecursive(process.cwd(), "appsettings", {
+	const appsettings = searchFilesRecursive(process.cwd(), "appsettings", {
 		ignoreDirectories: [
 			".vscode",
 			".opti",

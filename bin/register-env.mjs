@@ -1,7 +1,7 @@
 import { getProjectConfig } from "#helpers/project-config.mjs";
 
 export default async function registerEnv() {
-	// @ts-ignore
+	// @ts-expect-error
 	process.opti = {};
 
 	const config = await getProjectConfig();
