@@ -1,5 +1,5 @@
-import { commandExists, runShellCommand } from "#helpers/shell-command.mjs";
 import { confirm } from "@inquirer/prompts";
+import { commandExists, runShellCommand } from "#helpers/shell-command.mjs";
 import { checkFailed } from "../prereq.mjs";
 
 /**

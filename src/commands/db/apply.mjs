@@ -1,8 +1,8 @@
 "use command";
 
-import { setConnectionString } from "./helpers/connection-string.mjs";
 import baseCommand from "./db.mjs";
 import { handleAppSettingsFilePathSelect } from "./helpers/appsettings.mjs";
+import { setConnectionString } from "./helpers/connection-string.mjs";
 
 baseCommand
 	.command("apply")

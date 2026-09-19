@@ -1,25 +1,23 @@
 "use command";
 import path from "node:path";
 import program from "#cli";
+import checkConfigEntriesPresent from "#core/prereq/checks/config-entries-present.mjs";
+import checkDotnetExists from "#core/prereq/checks/dotnet.mjs";
+import checkSqlpackageExists from "#core/prereq/checks/sqlpackage.mjs";
 import { Printer } from "#core/printer.mjs";
-import {
-	createDockerComposeFile,
-	generateDBDockerCompose,
-} from "./helpers/docker.mjs";
+import { projectConfig } from "#helpers/project-config.mjs";
+import { runShellCommand } from "#helpers/shell-command.mjs";
+import { appsettings } from "./helpers/appsettings.mjs";
+import { bacpac } from "./helpers/bacpac.mjs";
 import {
 	connectionString,
 	setConnectionString,
 } from "./helpers/connection-string.mjs";
-import { findAvailablePort } from "./helpers/ports.mjs";
-import checkDotnetExists from "#core/prereq/checks/dotnet.mjs";
-import checkSqlpackageExists from "#core/prereq/checks/sqlpackage.mjs";
-import { bacpac } from "./helpers/bacpac.mjs";
 import {
-	appsettings,
-} from "./helpers/appsettings.mjs";
-import { projectConfig } from "#helpers/project-config.mjs";
-import { runShellCommand } from "#helpers/shell-command.mjs";
-import checkConfigEntriesPresent from "#core/prereq/checks/config-entries-present.mjs";
+	createDockerComposeFile,
+	generateDBDockerCompose,
+} from "./helpers/docker.mjs";
+import { findAvailablePort } from "./helpers/ports.mjs";
 
 export const printer = new Printer("db");
 

@@ -1,3 +1,4 @@
+import { Printer } from "#core/printer.mjs";
 import {
 	appendFile,
 	createDir,
@@ -5,7 +6,6 @@ import {
 	listDir,
 	writeFile,
 } from "#helpers/files.mjs";
-import { Printer } from "#core/printer.mjs";
 import { projectConfig } from "#helpers/project-config.mjs";
 
 const cwd = process.cwd();

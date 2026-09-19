@@ -1,8 +1,8 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
-import { runShellCommand } from "#helpers/shell-command.mjs";
 import { Printer } from "#core/printer.mjs";
 import { writeFileAbsolute } from "#helpers/files.mjs";
+import { runShellCommand } from "#helpers/shell-command.mjs";
 
 export async function waitForContainerLogString(
 	containerName,

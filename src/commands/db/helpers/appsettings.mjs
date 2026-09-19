@@ -1,6 +1,5 @@
-
-import { searchFilesRecursive } from "#helpers/files.mjs";
 import { select } from "@inquirer/prompts";
+import { searchFilesRecursive } from "#helpers/files.mjs";
 import { printer } from "../db.mjs";
 
 export const appsettings = {

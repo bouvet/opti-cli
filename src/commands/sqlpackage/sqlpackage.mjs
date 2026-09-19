@@ -1,9 +1,9 @@
 "use command";
 
-import { runShellCommand } from "#helpers/shell-command.mjs";
 import { exec } from "node:child_process";
 import program from "#cli";
 import { Printer } from "#core/printer.mjs";
+import { runShellCommand } from "#helpers/shell-command.mjs";
 
 const printer = new Printer("sqlpackage");
 const addToPathCommand = `cat << EOF >> ~/.zprofile

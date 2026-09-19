@@ -2,10 +2,10 @@
 
 global.quit = process.exit;
 
-import { Printer } from "#core/printer.mjs";
 import registerCommands from "#bin/register-commands.mjs";
 import registerEnv from "#bin/register-env.mjs";
 import { OptiCliCommand } from "#core/opti-cli-command.mjs";
+import { Printer } from "#core/printer.mjs";
 import packageJson from "../package.json" with { type: "json" };
 
 const printer = new Printer("opti-cli");

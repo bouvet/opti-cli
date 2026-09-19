@@ -1,5 +1,3 @@
-
-
 /**
  * @returns {Promise<import("../prereq.mjs").PrerequisiteCheckReturns>}
  */

@@ -1,14 +1,14 @@
 "use command";
 
 import fs from "node:fs";
-import program from "#cli";
-import { Printer } from "#core/printer.mjs";
-import { searchFilesRecursive } from "#helpers/files.mjs";
-import { runShellCommand } from "#helpers/shell-command.mjs";
-import checkDotnetExists from "#core/prereq/checks/dotnet.mjs";
 import { select } from "@inquirer/prompts";
+import program from "#cli";
+import checkDotnetExists from "#core/prereq/checks/dotnet.mjs";
+import { Printer } from "#core/printer.mjs";
 import { docker } from "#helpers/docker.mjs";
+import { searchFilesRecursive } from "#helpers/files.mjs";
 import { projectConfig } from "#helpers/project-config.mjs";
+import { runShellCommand } from "#helpers/shell-command.mjs";
 
 const printer = new Printer("watch");
 

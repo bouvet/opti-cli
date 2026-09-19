@@ -1,11 +1,10 @@
-import { checkPrerequisites } from "#core/prereq/prereq.mjs";
 import { Command } from "commander";
+import { checkPrerequisites } from "#core/prereq/prereq.mjs";
 
 /**
  * Builds upon the commander Command class allowing us to extend its functionality and implement our own
  */
 export class OptiCliCommand extends Command {
-
 	/**
 	 * @param {string} name
 	 */

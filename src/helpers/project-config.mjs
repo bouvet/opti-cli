@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
+import { confirm } from "@inquirer/prompts";
 import registerEnv from "#bin/register-env.mjs";
 import { Printer } from "#core/printer.mjs";
-import { confirm } from "@inquirer/prompts";
 import { optiInitCommand } from "../commands/init/_init.mjs";
 
 const printer = new Printer("Project config");
