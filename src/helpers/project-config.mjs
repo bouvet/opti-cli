@@ -57,7 +57,9 @@ async function setConfigValues(projectConfig) {
 		throw new Error("could not find config");
 	}
 
-	Object.entries(projectConfig).forEach(([k, v]) => (config[k] = v));
+	Object.entries(projectConfig).forEach(([k, v]) => {
+		config[k] = v;
+	});
 
 	const projectInfo = findProjectConfigFile();
 
