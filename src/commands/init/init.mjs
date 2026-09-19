@@ -1,12 +1,11 @@
-'use command';
+"use command";
 
-import program from '#cli';
-import { optiInitCommand } from './_init.mjs';
-
+import program from "#cli";
+import { optiInitCommand } from "./_init.mjs";
 
 program
-  .command('init')
-  .description('Basic setup for using opti cli')
-  .action(async () => {
-    await optiInitCommand()
-  });
+	.command("init")
+	.description("Basic setup for using opti cli")
+	.action(async () => {
+		await optiInitCommand();
+	});
