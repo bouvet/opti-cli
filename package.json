@@ -14,7 +14,15 @@
 		"commands:add": "node ./scripts/generate-command.mjs",
 		"cli:install": "pnpm add -g .",
 		"cli:uninstall": "pnpm remove -g @bouvet/opti-cli",
-		"publish:jsr": "npx jsr publish"
+		"publish:jsr": "npx jsr publish",
+		"lint": "pnpm biome check --write",
+		"lint:check": "pnpm biome check --files-ignore-unknown=true --no-errors-on-unmatched",
+		"prepare": "husky"
+	},
+	"lint-staged": {
+		"*": [
+			"pnpm lint:check"
+		]
 	},
 	"bin": {
 		"opti": "./src/cli.mjs"
@@ -37,6 +45,8 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.5.14",
 		"@types/node": "22.13.14",
+		"husky": "9.1.7",
+		"lint-staged": "17.5.1",
 		"prettier": "3.4.2",
 		"prettier-eslint": "16.4.2"
 	},
