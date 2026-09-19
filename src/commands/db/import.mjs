@@ -1,7 +1,7 @@
 "use command";
 
 import checkConfigEntriesPresent from "#core/prereq/checks/config-entries-present.mjs";
-import baseCommand, { printer } from "./db.mjs";
+import baseCommand from "./db.mjs";
 import { bacpac } from "./helpers/bacpac.mjs";
 
 baseCommand

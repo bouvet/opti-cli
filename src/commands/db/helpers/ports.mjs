@@ -1,11 +1,11 @@
-import { exec } from "child_process";
-import { promisify } from "util";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
 import { Printer } from "#core/printer.mjs";
 
 const execAsync = promisify(exec);
 const printer = new Printer("");
 
-const ports = {
+const _ports = {
 	isAvailable: isPortAvailable,
 	findAvailable: findAvailablePort,
 };
@@ -48,7 +48,7 @@ export async function isPortAvailable(port) {
 			);
 			return portIsAvailable;
 		});
-	} catch (err) {
+	} catch (_err) {
 		printer.group(
 			printer.help(
 				"Could not connect to Docker to check port availability. Is Docker running?",

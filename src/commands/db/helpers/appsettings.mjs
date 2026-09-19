@@ -1,4 +1,4 @@
-import path from "path";
+
 import { searchFilesRecursive } from "#helpers/files.mjs";
 import { select } from "@inquirer/prompts";
 import { printer } from "../db.mjs";
@@ -32,7 +32,7 @@ export async function handleAppSettingsFilePathSelect() {
 	const appsettings = getAppsettingsFilePaths();
 
 	if (!Array.isArray(appsettings)) {
-		printer.success("/" + appsettings.split("/").slice(-2).join("/"), {
+		printer.success(`/${appsettings.split("/").slice(-2).join("/")}`, {
 			prefixMessage: "Defaulted to following appsettings.",
 			prefixColor: "white",
 		});

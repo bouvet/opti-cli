@@ -131,8 +131,8 @@ export class Printer {
 		console.log(
 			colors.red(`✖`),
 			colors.red(args[0]),
-			args[1] ? "\n" + colors.gray(args[1].stack || args[1]) : "",
-			args[2] ? "\n\n" + args.splice(2).join("\n") : "",
+			args[1] ? `\n${colors.gray(args[1].stack || args[1])}` : "",
+			args[2] ? `\n\n${args.splice(2).join("\n")}` : "",
 		);
 	}
 

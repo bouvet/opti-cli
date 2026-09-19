@@ -8,7 +8,6 @@ import {
 } from "./helpers/docker.mjs";
 import {
 	connectionString,
-	createConnectionString,
 	setConnectionString,
 } from "./helpers/connection-string.mjs";
 import { findAvailablePort } from "./helpers/ports.mjs";
@@ -17,10 +16,8 @@ import checkSqlpackageExists from "#core/prereq/checks/sqlpackage.mjs";
 import { bacpac } from "./helpers/bacpac.mjs";
 import {
 	appsettings,
-	handleAppSettingsFilePathSelect,
 } from "./helpers/appsettings.mjs";
 import { projectConfig } from "#helpers/project-config.mjs";
-import registerEnv from "#bin/register-env.mjs";
 import { runShellCommand } from "#helpers/shell-command.mjs";
 import checkConfigEntriesPresent from "#core/prereq/checks/config-entries-present.mjs";
 

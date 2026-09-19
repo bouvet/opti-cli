@@ -1,6 +1,6 @@
 "use command";
 
-import fs from "fs";
+import fs from "node:fs";
 import program from "#cli";
 import { Printer } from "#core/printer.mjs";
 import { searchFilesRecursive } from "#helpers/files.mjs";
@@ -41,7 +41,7 @@ program
 			},
 		);
 
-		if (!files || !files.length) {
+		if (!files?.length) {
 			printer.error(`Could not find file with name ${launchSettingsFileName}`);
 			printer.help(
 				`Are you sure there is a file named ${launchSettingsFileName} in the current working directory?`,
@@ -51,7 +51,7 @@ program
 
 		let launchSettingsPath;
 
-		if (files.length == 1) {
+		if (files.length === 1) {
 			launchSettingsPath = files[0];
 		}
 
@@ -88,7 +88,7 @@ program
 			return;
 		}
 
-		if (profiles.length == 1) {
+		if (profiles.length === 1) {
 			profileToRun = profiles[0];
 		}
 

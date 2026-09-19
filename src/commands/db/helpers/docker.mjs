@@ -1,4 +1,4 @@
-import { spawn } from "child_process";
+import { spawn } from "node:child_process";
 import path from "node:path";
 import { runShellCommand } from "#helpers/shell-command.mjs";
 import { Printer } from "#core/printer.mjs";

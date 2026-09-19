@@ -1,8 +1,8 @@
 "use command";
 
-import path from "path";
-import fs from "fs";
-import { spawn } from "child_process";
+import path from "node:path";
+import fs from "node:fs";
+import { spawn } from "node:child_process";
 import baseCommand, { printer } from "./db.mjs";
 import { bacpac } from "./helpers/bacpac.mjs";
 

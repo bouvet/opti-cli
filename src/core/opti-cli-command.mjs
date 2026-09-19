@@ -5,12 +5,6 @@ import { Command } from "commander";
  * Builds upon the commander Command class allowing us to extend its functionality and implement our own
  */
 export class OptiCliCommand extends Command {
-	/**
-	 * @param {string} [name]
-	 */
-	constructor(name) {
-		super(name);
-	}
 
 	/**
 	 * @param {string} name

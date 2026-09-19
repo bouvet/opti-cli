@@ -1,4 +1,4 @@
-import { spawn, spawnSync } from "child_process";
+import { spawn, spawnSync } from "node:child_process";
 
 export const shell = {
 	run: runShellCommand,

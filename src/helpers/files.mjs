@@ -12,7 +12,7 @@ export function getFile(pathFromRoot, fileName) {
 	try {
 		return [
 			null,
-			fs.readFileSync(cwd + "/" + pathFromRoot + "/" + fileName, "utf-8"),
+			fs.readFileSync(`${cwd}/${pathFromRoot}/${fileName}`, "utf-8"),
 		];
 	} catch (error) {
 		return [error];
@@ -24,7 +24,7 @@ export function writeFile(pathFromRoot, fileToWriteTo, toWrite) {
 		return [
 			null,
 			fs.writeFileSync(
-				cwd + "/" + pathFromRoot + "/" + fileToWriteTo,
+				`${cwd}/${pathFromRoot}/${fileToWriteTo}`,
 				toWrite,
 				"utf-8",
 			),
@@ -38,7 +38,7 @@ export function writeFileAbsolute(absolutePath, fileToWriteTo, toWrite) {
 	try {
 		return [
 			null,
-			fs.writeFileSync(absolutePath + "/" + fileToWriteTo, toWrite, "utf-8"),
+			fs.writeFileSync(`${absolutePath}/${fileToWriteTo}`, toWrite, "utf-8"),
 		];
 	} catch (error) {
 		return [error];
@@ -50,7 +50,7 @@ export function appendFile(pathFromRoot, fileToAppendTo, toAppend) {
 		return [
 			null,
 			fs.appendFileSync(
-				cwd + "/" + pathFromRoot + "/" + fileToAppendTo,
+				`${cwd}/${pathFromRoot}/${fileToAppendTo}`,
 				toAppend,
 				"utf-8",
 			),
