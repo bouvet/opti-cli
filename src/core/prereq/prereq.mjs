@@ -1,4 +1,4 @@
-import { Printer } from '#core/printer.mjs';
+import { Printer } from "#core/printer.mjs";
 
 /**
  * @typedef {void} Success
@@ -22,16 +22,16 @@ import { Printer } from '#core/printer.mjs';
  * @param {Printer} printer - printer
  */
 export async function checkPrerequisites(
-  preRequesites,
-  printer = new Printer('Prerequisites')
+	preRequesites,
+	printer = new Printer("Prerequisites"),
 ) {
-  for (const requesiteCheck of preRequesites) {
-    const [checkPassed, exitCode] = (await requesiteCheck(printer)) || [true];
+	for (const requesiteCheck of preRequesites) {
+		const [checkPassed, exitCode] = (await requesiteCheck(printer)) || [true];
 
-    if (!checkPassed) {
-      quit(exitCode || 0);
-    }
-  }
+		if (!checkPassed) {
+			quit(exitCode || 0);
+		}
+	}
 }
 
 /**
@@ -40,5 +40,5 @@ export async function checkPrerequisites(
  * @returns {Fail}
  */
 export function checkFailed(exitCode = 1) {
-  return [false, exitCode];
+	return [false, exitCode];
 }
