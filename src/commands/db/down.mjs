@@ -6,9 +6,9 @@ import baseCommand, { printer } from './db.mjs';
 baseCommand
   .command('down')
   .alias('stop')
-  .description('Stop the datatbase container stac')
+  .description('Stop the datatbase container stack')
   .action(async () => {
-    const { OPTI_FOLDER, PROJECT_NAME } = process.opti.projectConfig;
+    const { OPTI_FOLDER, PROJECT_NAME } = process.opti.env;
 
     await runShellCommand(
       `docker compose -p ${PROJECT_NAME} -f ${OPTI_FOLDER}/docker-compose.yml down`

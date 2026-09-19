@@ -29,18 +29,20 @@ export async function getProjectConfig() {
         })
 
         if (createConfig) {
-            optiInitCommand();
-
+            await optiInitCommand();
             projectInfo = findProjectConfigFile();
         } else {
-            quit(1);
+            quit(0);
         }
     }
 
+    // @ts-ignore
     const projectFile = fs.readFileSync(projectInfo.filePath, 'utf8');
+
     try {
         return JSON.parse(projectFile);
     } catch (error) {
+        // @ts-ignore
         printer.error('Failed to parse project config file!', error.message);
         quit(1);
     }
@@ -66,6 +68,7 @@ async function setConfigValues(projectConfig) {
 
 async function saveConfig(configAbsolutePath, config) {
     fs.writeFileSync(configAbsolutePath, JSON.stringify(config, null, 2));
+    await registerEnv();
 }
 
 /**

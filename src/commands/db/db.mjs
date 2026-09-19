@@ -7,40 +7,21 @@ import {
   generateDBDockerCompose,
 } from './helpers/docker.mjs';
 import {
+  connectionString,
   createConnectionString,
   setConnectionString,
 } from './helpers/connection-string.mjs';
 import { findAvailablePort } from './helpers/ports.mjs';
 import checkDotnetExists from '#core/prereq/checks/dotnet.mjs';
 import checkSqlpackageExists from '#core/prereq/checks/sqlpackage.mjs';
-import { handleBacpacFileSelect, handleBacpacImport } from './helpers/bacpac.mjs';
-import { handleAppSettingsFilePathSelect } from './helpers/appsettings.mjs';
+import { bacpac } from './helpers/bacpac.mjs';
+import { appsettings, handleAppSettingsFilePathSelect } from './helpers/appsettings.mjs';
 import { projectConfig } from '#helpers/project-config.mjs';
 import registerEnv from '#bin/register-env.mjs';
 import { runShellCommand } from '#helpers/shell-command.mjs';
 import checkConfigEntriesPresent from '#core/prereq/checks/config-entries-present.mjs';
 
 export const printer = new Printer('db');
-
-async function handleOptions(options) {
-  if (options.port && Number.isNaN(+options.port)) {
-    printer.error('Port is not an integer.');
-    quit(1);
-  }
-
-  if (!options.port) {
-    // check if project config has a port
-    // if not, probably a new project, and try to find available port
-    // ** this can be handled better, should also check availability of the current project port **
-    options.port =
-      process.opti.projectConfig?.DB_PORT ??
-      (await findAvailablePort(process.opti.constants.defaultDBPort));
-  }
-
-  if (!options.name) {
-    options.name = `sqlserver-${options.port}`;
-  }
-}
 
 const baseCommand = program
   .command('db')
@@ -50,7 +31,7 @@ const baseCommand = program
 
 baseCommand
   .description(
-    'Setup docker services for Azure SQL DB and import a given .bacpac file'
+    'Setup docker services for Local MSSQL DB and import a given .bacpac file'
   )
   .option(
     '-p, --port <port>',
@@ -80,13 +61,13 @@ baseCommand
       }),
     );
 
-    const selectedBacpacFilePath = await handleBacpacFileSelect();
+    const selectedBacpacFilePath = await bacpac.select();
 
-    const selectedAppsettingsPath = await handleAppSettingsFilePathSelect();
+    const selectedAppsettingsPath = await appsettings.select();
 
     const bacpacFileName = selectedBacpacFilePath.split('/').at(-1);
 
-    const connectionString = createConnectionString({
+    const conString = connectionString.create({
       bacpac: bacpacFileName,
       port,
       containerDbName: name,
@@ -94,7 +75,7 @@ baseCommand
 
     setConnectionString({
       selectedAppsettingsPath,
-      connectionString,
+      connectionString: conString,
     });
 
     const dockerComposeFile = generateDBDockerCompose({
@@ -104,14 +85,14 @@ baseCommand
 
     createDockerComposeFile({ dockerComposeFile });
 
-    await setProjectDatabaseConfigs({
+    await setDatabaseProjectConfig({
       port,
       name,
       bacpac: selectedBacpacFilePath,
-      connectionString
+      connectionString: conString
     });
 
-    const didImport = await handleBacpacImport(name);
+    const didImport = await bacpac.import(name);
 
     printer.success('Database setup successful!');
 
@@ -128,24 +109,38 @@ baseCommand
     );
   });
 
+
+async function handleOptions(options) {
+  if (options.port && Number.isNaN(+options.port)) {
+    printer.error('Port is not an integer.');
+    quit(0);
+  }
+
+  if (!options.port) {
+    options.port =
+      process.opti.env?.DB_PORT ??
+      (await findAvailablePort(process.opti.constants.defaultDBPort));
+  }
+
+  if (!options.name) {
+    options.name = `sqlserver-${options.port}`;
+  }
+}
+
 /** 
  * Create a new projects.json file
  * @param {{ port: string, name: string, bacpac: string, connectionString: string }} param0
  */
-async function setProjectDatabaseConfigs({ port, name, bacpac, connectionString }) {
-  /** @type {Partial<ProjectConfig>} */
-  const config = {
+async function setDatabaseProjectConfig({ port, name, bacpac, connectionString }) {
+  await projectConfig.setValues({
     PROJECT_NAME: path.basename(process.cwd()).toLowerCase().replace(".", "-"),
     BACPAC_PATH: bacpac,
+    // @ts-ignore
     DB_NAME: bacpac.split('/').at(-1).split('.')[0],
     DB_CONTAINER_NAME: name,
     DB_PORT: port,
     CONNECTION_STRING: connectionString,
-  };
-
-  projectConfig.setValues(config);
-
-  await registerEnv();
+  });
 }
 
 export default baseCommand;

@@ -11,7 +11,7 @@ import { projectConfig } from '#helpers/project-config.mjs';
 const cwd = process.cwd();
 const printer = new Printer('init');
 
-export function optiInitCommand() {
+export async function optiInitCommand() {
   const missingOptiFolder = listDir(cwd + '/.opti')[0] !== null;
   const missingBacpacFolder = listDir(cwd + '/.opti/bacpac')[0] !== null;
   const missingProjectsConfig = getFile('.opti', 'project.json')[0] !== null;
@@ -46,7 +46,7 @@ export function optiInitCommand() {
     writeFile('/.opti', 'project.json', JSON.stringify({}));
   }
 
-  projectConfig.setValues({
+  await projectConfig.setValues({
     PROJECT_ROOT_PATH: cwd,
     OPTI_FOLDER: cwd + "/.opti"
   })

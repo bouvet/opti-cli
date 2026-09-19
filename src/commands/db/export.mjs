@@ -1,6 +1,6 @@
 'use command';
 
-import { exportBacpac } from './helpers/bacpac.mjs';
+import { bacpac } from './helpers/bacpac.mjs';
 import baseCommand, { printer } from './db.mjs';
 
 baseCommand
@@ -11,7 +11,7 @@ baseCommand
   .action(async () => {
     printer.info('Running export');
     const { CONNECTION_STRING: connectionString, DB_NAME: dbName } =
-      process.opti.projectConfig;
+      process.opti.env;
 
-    await exportBacpac({ connectionString, dbName });
+    await bacpac.export({ connectionString, dbName });
   });

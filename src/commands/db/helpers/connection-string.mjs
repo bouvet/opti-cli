@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { printer } from '../db.mjs';
 
-const connectionString = {
+export const connectionString = {
   create: createConnectionString,
   set: setConnectionString
 }

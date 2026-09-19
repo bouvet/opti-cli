@@ -3,7 +3,7 @@ import { searchFilesRecursive } from '#helpers/files.mjs';
 import { select } from '@inquirer/prompts';
 import { printer } from '../db.mjs';
 
-const appsettings = {
+export const appsettings = {
   getAppsettingsFilePaths,
   select: handleAppSettingsFilePathSelect
 }

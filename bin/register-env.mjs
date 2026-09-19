@@ -11,7 +11,7 @@ export default async function registerEnv() {
   }
 
   process.opti = {
-    projectConfig: config,
+    env: config,
     constants: {
       defaultDBPort: 1433,
     },

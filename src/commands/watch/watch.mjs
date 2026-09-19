@@ -8,7 +8,7 @@ import { runShellCommand } from '#helpers/shell-command.mjs';
 import checkDotnetExists from '#core/prereq/checks/dotnet.mjs';
 import { select } from '@inquirer/prompts';
 import { docker } from '#helpers/docker.mjs';
-import { getProjectConfig, projectConfig } from '#helpers/project-config.mjs';
+import { projectConfig } from '#helpers/project-config.mjs';
 
 const printer = new Printer('watch');
 
@@ -35,7 +35,7 @@ program
 
         // find launch settings
         const files = searchFilesRecursive(
-            process.opti.projectConfig?.PROJECT_ROOT_PATH || process.cwd(),
+            process.opti.env?.PROJECT_ROOT_PATH || process.cwd(),
             launchSettingsFileName,
             {
                 relativePath: true,
@@ -75,7 +75,7 @@ program
             return
         }
 
-        const existingDefaultProfile = process.opti.projectConfig.DEFAULT_PROFILE;
+        const existingDefaultProfile = process.opti.env.DEFAULT_PROFILE;
         const runDefault = existingDefaultProfile && !defaultProfile;
 
         if (runDefault) {
@@ -158,5 +158,5 @@ const readProfiles = async (filePath) => {
 };
 
 async function setDefaultProfile(profile) {
-    projectConfig.setValues({ DEFAULT_PROFILE: profile })
+    await projectConfig.setValues({ DEFAULT_PROFILE: profile })
 }

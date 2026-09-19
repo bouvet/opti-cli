@@ -7,6 +7,6 @@ import { optiInitCommand } from './_init.mjs';
 program
   .command('init')
   .description('Basic setup for using opti cli')
-  .action(() => {
-    optiInitCommand()
+  .action(async () => {
+    await optiInitCommand()
   });

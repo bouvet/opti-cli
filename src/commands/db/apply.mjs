@@ -10,7 +10,7 @@ baseCommand
   .action(async () => {
     const selectedAppsettingsPath = await handleAppSettingsFilePathSelect();
 
-    const { CONNECTION_STRING: connectionString } = process.opti.projectConfig;
+    const { CONNECTION_STRING: connectionString } = process.opti.env;
 
     setConnectionString({
       selectedAppsettingsPath,

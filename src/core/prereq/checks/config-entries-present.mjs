@@ -10,7 +10,7 @@ export default function checkConfigEntriesPresent(configKeys) {
    * @param {import("#core/printer.mjs").Printer} printer
    */
   return function (printer) {
-    const config = process.opti.projectConfig ?? {};
+    const config = process.opti.env ?? {};
 
     const missingKeys = configKeys.filter(
       (configKey) => !config[configKey]

@@ -20,7 +20,7 @@ baseCommand
       printer.info('Starting database and containers');
     }
 
-    const { OPTI_FOLDER, PROJECT_NAME } = process.opti.projectConfig;
+    const { OPTI_FOLDER, PROJECT_NAME } = process.opti.env;
     const [success, error] = await runShellCommand(
       `docker compose -p ${PROJECT_NAME} -f ${OPTI_FOLDER}/docker-compose.yml up -d`, [], { ignoreFailure: true, stdio: ignout ? "ignore" : "inherit" }
     );

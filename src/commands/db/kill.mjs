@@ -7,10 +7,10 @@ baseCommand
   .command('kill')
   .description('Permanently remove the datatbase container stack')
   .action(async () => {
-    const { OPTI_FOLDER, PROJECT_NAME } = process.opti.projectConfig;
+    const { OPTI_FOLDER, PROJECT_NAME } = process.opti.env;
 
     await runShellCommand(
       `docker compose -p ${PROJECT_NAME} -f ${OPTI_FOLDER}/docker-compose.yml down --volumes --remove-orphans`
     );
-    printer.done('Database permanently removed.');
+    printer.success('Database permanently removed.');
   });

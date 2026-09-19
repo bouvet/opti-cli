@@ -9,7 +9,7 @@ export const docker = {
 
 
 async function ensureDbIsRunning() {
-  const projectRoot = process.opti.projectConfig?.PROJECT_ROOT_PATH;
+  const projectRoot = process.opti.env?.PROJECT_ROOT_PATH;
 
   if (!projectRoot) {
     printer.info('No project root path set, run <opti db> to set it.');
