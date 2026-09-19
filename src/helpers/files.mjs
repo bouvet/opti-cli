@@ -1,17 +1,12 @@
 import fs, { readdirSync } from 'node:fs';
-import path, { dirname } from 'node:path';
-import { fileURLToPath } from 'url';
+import path from 'node:path';
+
+/* 
+  This should be rewritten into a better implementation, or dropped altogether and replaed with just fs. 
+  Maybe even just use fs-extra, seems like a nice wrapper.
+*/
 
 const cwd = process.cwd();
-
-const files = {
-  getFile,
-  writeFile,
-  appendFile,
-  listDir,
-  createDir,
-  searchFilesRecursive
-}
 
 export function getFile(pathFromRoot, fileName) {
   try {
