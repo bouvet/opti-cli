@@ -3,7 +3,8 @@
 CLI tools to streamline Team Opti's Optimizely workflow.
 
 ## Pre-requisites
-Installed `pnpm` and `node`.
+- Installed `pnpm` and `node`.
+- MacOS
 
 ## Installation
 Either clone the repository and install it from there or install it directly from releases.
