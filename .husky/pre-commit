@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if ! lint-staged .; then
+  echo ""
+  echo "❌ \033[31mLinting failed!\033[0m"
+  echo "💡 Run \033[36mpnpm lint\033[0m to fix formatting and lint errors before committing."
+  echo ""
+  exit 1
+fi
