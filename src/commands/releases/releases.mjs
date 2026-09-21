@@ -2,6 +2,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { confirm } from "@inquirer/prompts";
 import program from "#cli";
 import { Printer } from "#core/printer.mjs";
 
@@ -44,7 +45,7 @@ function timestamp() {
 	return `${now.getFullYear()}/${pad(now.getMonth() + 1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 }
 
-function runRelease() {
+async function runRelease() {
 	try {
 		const root = git(process.cwd(), ["rev-parse", "--show-toplevel"]);
 		if (git(root, ["status", "--porcelain", "--untracked-files=all"])) {
@@ -55,43 +56,100 @@ function runRelease() {
 		const baseline = commits.findIndex(
 			(commit) => commit.subject === initialCommit,
 		);
-		let message = initialCommit;
+
 		if (!fs.existsSync(filename)) {
-			fs.writeFileSync(filename, "# Changelog\n", { flag: "wx" });
-		} else {
-			if (baseline === -1) {
-				throw new Error(
-					"CHANGELOGS.md exists without an initialization commit; it will not be overwritten.",
-				);
-			}
-			const pending = commits.slice(0, baseline);
-			if (!pending.length || releasePattern.test(pending[0].subject)) {
-				printer.info("No new commits to release.");
+			printer.info("No CHANGELOGS.md found in this repository.");
+			printer.neutral("Will create CHANGELOGS.md with commit:");
+			printer.neutral(`  ${initialCommit}`);
+			printer.group();
+
+			const shouldCommit = await confirm({
+				message: "Do you want to initialize and commit CHANGELOGS.md?",
+				default: false,
+			});
+
+			if (!shouldCommit) {
+				printer.info("Aborted. No changes were made.");
 				return;
 			}
-			if (!fs.lstatSync(filename).isFile()) {
-				throw new Error("CHANGELOGS.md must be a regular file.");
-			}
-			const date = timestamp();
-			message = `[skip ci] Release ${date}`;
-			let markdown = `# Changelog\n\n## ${date}\n\n`;
-			for (const commit of pending) {
-				const release = releasePattern.exec(commit.subject);
-				if (release) {
-					markdown += `\n## ${release[1]}\n\n`;
-				} else {
-					const subject = commit.subject
-						.replace(/&/g, "&amp;")
-						.replace(/[\\`*_[\]<>]/g, "\\$&");
-					markdown += `- ${subject} (${commit.hash.slice(0, 7)})\n`;
-				}
-			}
-			fs.writeFileSync(filename, markdown);
+
+			fs.writeFileSync(filename, "# Changelog\n", { flag: "wx" });
+			git(root, ["add", "--", "CHANGELOGS.md"]);
+			git(root, [
+				"commit",
+				"--only",
+				"-m",
+				initialCommit,
+				"--",
+				"CHANGELOGS.md",
+			]);
+			printer.success(initialCommit);
+			return;
 		}
+
+		if (baseline === -1) {
+			throw new Error(
+				"CHANGELOGS.md exists without an initialization commit; it will not be overwritten.",
+			);
+		}
+		const pending = commits.slice(0, baseline);
+		if (!pending.length || releasePattern.test(pending[0].subject)) {
+			printer.info("No new commits to release.");
+			return;
+		}
+		if (!fs.lstatSync(filename).isFile()) {
+			throw new Error("CHANGELOGS.md must be a regular file.");
+		}
+
+		const date = timestamp();
+		const message = `[skip ci] Release ${date}`;
+
+		const newCommits = [];
+		for (const commit of pending) {
+			if (releasePattern.test(commit.subject)) break;
+			newCommits.push(commit);
+		}
+
+		let markdown = `# Changelog\n\n## ${date}\n\n`;
+		for (const commit of pending) {
+			const release = releasePattern.exec(commit.subject);
+			if (release) {
+				markdown += `\n## ${release[1]}\n\n`;
+			} else {
+				const subject = commit.subject
+					.replace(/&/g, "&amp;")
+					.replace(/[\\`*_[\]<>]/g, "\\$&");
+				markdown += `- ${subject} (${commit.hash.slice(0, 7)})\n`;
+			}
+		}
+
+		printer.group();
+		printer.info(`Release: ${message}`);
+		printer.neutral(`Commits included (${newCommits.length}):`);
+		for (const commit of newCommits) {
+			printer.neutral(`  - ${commit.subject} (${commit.hash.slice(0, 7)})`);
+		}
+		printer.group();
+
+		const shouldCommit = await confirm({
+			message: "Do you want to commit this release?",
+			default: false,
+		});
+
+		if (!shouldCommit) {
+			printer.info("Release aborted. No changes were committed.");
+			return;
+		}
+
+		fs.writeFileSync(filename, markdown);
 		git(root, ["add", "--", "CHANGELOGS.md"]);
 		git(root, ["commit", "--only", "-m", message, "--", "CHANGELOGS.md"]);
 		printer.success(message);
 	} catch (error) {
+		if (error instanceof Error && error.name === "ExitPromptError") {
+			printer.info("bye! 👋");
+			return;
+		}
 		printer.error(error instanceof Error ? error.message : String(error));
 		process.exitCode = 1;
 	}
