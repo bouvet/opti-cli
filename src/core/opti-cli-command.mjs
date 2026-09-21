@@ -5,11 +5,29 @@ import { checkPrerequisites } from "#core/prereq/prereq.mjs";
  * Builds upon the commander Command class allowing us to extend its functionality and implement our own
  */
 export class OptiCliCommand extends Command {
+	_optiSkipConfig = false;
+
 	/**
 	 * @param {string} name
 	 */
 	createCommand(name) {
 		return new OptiCliCommand(name);
+	}
+
+	/**
+	 * Marks this command as not requiring project config and will skip the config setup prompt.
+	 * @returns {this}
+	 */
+	skipConfig() {
+		this._optiSkipConfig = true;
+		return this;
+	}
+
+	/**
+	 * @returns {boolean}
+	 */
+	doSkipConfigSetup() {
+		return this._optiSkipConfig;
 	}
 
 	/**

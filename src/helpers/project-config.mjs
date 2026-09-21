@@ -20,6 +20,10 @@ export const projectConfig = {
 export async function getProjectConfig() {
 	let projectInfo = findProjectConfigFile();
 
+	if (!projectInfo && process.opti.skipConfigSetup) {
+		return;
+	}
+
 	if (!projectInfo) {
 		printer.info("No config found.");
 		const createConfig = await confirm({
@@ -30,7 +34,7 @@ export async function getProjectConfig() {
 			await optiInitCommand();
 			projectInfo = findProjectConfigFile();
 		} else {
-			quit(0);
+			return;
 		}
 	}
 

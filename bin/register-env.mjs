@@ -1,12 +1,16 @@
 import { getProjectConfig } from "#helpers/project-config.mjs";
 
-export default async function registerEnv() {
+/**
+ *
+ * @param {{skipConfigSetup?: boolean}} param0
+ */
+export default async function registerEnv({ skipConfigSetup }) {
 	// @ts-expect-error
-	process.opti = {};
+	process.opti = { skipConfigSetup };
 
 	const config = await getProjectConfig();
 
-	if (!config) {
+	if (!config && !skipConfigSetup) {
 		quit(0);
 	}
 
