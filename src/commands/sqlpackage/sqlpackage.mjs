@@ -14,6 +14,7 @@ EOF`;
 program
 	.command("sqlpackage")
 	.description("Install sqlpackage with dotnet cli")
+	.skipConfig()
 	.option("-u, --uninstall", "Uninstalls sqlpackage")
 	.action(async ({ uninstall }) => {
 		if (uninstall) {

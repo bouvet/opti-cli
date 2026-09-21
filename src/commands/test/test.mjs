@@ -6,6 +6,7 @@ import { Printer } from "#core/printer.mjs";
 program
 	.command("test")
 	.description("Test that commands are working")
+	.skipConfig()
 	.action(async () => {
 		const printer = new Printer("test");
 		printer.info(
