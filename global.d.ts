@@ -17,6 +17,7 @@ declare global {
 		interface Process {
 			opti: {
 				env: ProjectConfig;
+				skipConfigSetup: boolean;
 				constants: {
 					defaultDBPort: number;
 				};

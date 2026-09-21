@@ -20,8 +20,8 @@ async function start() {
 		.description("Team Optimizely CLI tools.")
 		.version(packageJson.version)
 		.hook("preAction", async (_thisCommand, actionCommand) => {
-			await registerEnv();
 			const cmd = /** @type {OptiCliCommand} */ (actionCommand);
+			await registerEnv({ skipConfigSetup: cmd.doSkipConfigSetup() });
 
 			if (typeof cmd.runPrereqs === "function") {
 				await cmd.runPrereqs();

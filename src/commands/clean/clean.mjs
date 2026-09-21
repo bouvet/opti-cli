@@ -8,6 +8,7 @@ const printer = new Printer("opti-cli");
 
 program
 	.command("clean")
+	.skipConfig()
 	.description(
 		"Manually removes build output and restores packages and re-builds",
 	)
