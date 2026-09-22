@@ -10,6 +10,7 @@ vi.mock("#cli", () => {
 	const chainable = {
 		command: () => chainable,
 		description: () => chainable,
+		option: () => chainable,
 		action: () => chainable,
 	};
 	return { default: chainable };
@@ -148,5 +149,21 @@ describe("runRelease", () => {
 		await runRelease();
 
 		expect(confirmMock).toHaveBeenCalledTimes(1);
+	});
+
+	it("skips the confirmation prompt when yes is passed", async () => {
+		commit(dir, "initial project commit");
+
+		await runRelease({ yes: true });
+
+		expect(confirmMock).not.toHaveBeenCalled();
+		expect(fs.existsSync(path.join(dir, "CHANGELOGS.md"))).toBe(true);
+
+		commit(dir, "feature A");
+		await runRelease({ yes: true });
+
+		expect(confirmMock).not.toHaveBeenCalled();
+		const content = fs.readFileSync(path.join(dir, "CHANGELOGS.md"), "utf8");
+		expect(content).toContain("feature A");
 	});
 });

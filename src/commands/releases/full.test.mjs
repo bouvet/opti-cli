@@ -10,6 +10,7 @@ vi.mock("#cli", () => {
 	const chainable = {
 		command: () => chainable,
 		description: () => chainable,
+		option: () => chainable,
 		action: () => chainable,
 	};
 	return { default: chainable };
@@ -111,5 +112,21 @@ describe("runFull", () => {
 		const content = fs.readFileSync(changelogPath(), "utf8");
 		expect(content).toContain("feature A");
 		expect(content).not.toContain("unreleased work in progress");
+	});
+
+	it("skips the confirmation prompt when yes is passed", async () => {
+		commit(dir, "initial project commit");
+		confirmMock.mockResolvedValue(true);
+		await runRelease();
+		confirmMock.mockClear();
+
+		fs.writeFileSync(changelogPath(), "corrupted content");
+
+		await runFull({ yes: true });
+
+		expect(confirmMock).not.toHaveBeenCalled();
+		expect(fs.readFileSync(changelogPath(), "utf8")).not.toBe(
+			"corrupted content",
+		);
 	});
 });

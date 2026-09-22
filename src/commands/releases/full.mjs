@@ -16,9 +16,10 @@ baseCommand
 	.description(
 		"Regenerate CHANGELOGS.md from the full git history since initialization (recovery, no commit)",
 	)
-	.action(() => runFull());
+	.option("-y, --yes", "Skip confirmation prompt (for pipelines)")
+	.action((options) => runFull(options));
 
-export async function runFull() {
+export async function runFull({ yes = false } = {}) {
 	try {
 		const root = git(process.cwd(), ["rev-parse", "--show-toplevel"]);
 		const filename = path.join(root, "CHANGELOGS.md");
@@ -52,10 +53,12 @@ export async function runFull() {
 		printer.neutral("This does not create a commit.");
 		printer.group();
 
-		const shouldWrite = await confirm({
-			message: "Do you want to overwrite CHANGELOGS.md with the full log?",
-			default: false,
-		});
+		const shouldWrite =
+			yes ||
+			(await confirm({
+				message: "Do you want to overwrite CHANGELOGS.md with the full log?",
+				default: false,
+			}));
 
 		if (!shouldWrite) {
 			printer.info("Aborted. No changes were made.");
