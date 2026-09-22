@@ -18,7 +18,7 @@ baseCommand
 	)
 	.action(() => runFull());
 
-async function runFull() {
+export async function runFull() {
 	try {
 		const root = git(process.cwd(), ["rev-parse", "--show-toplevel"]);
 		const filename = path.join(root, "CHANGELOGS.md");

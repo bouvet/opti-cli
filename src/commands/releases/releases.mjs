@@ -71,7 +71,7 @@ export function buildMarkdown(commits, headerLabel) {
 	return markdown;
 }
 
-async function runRelease() {
+export async function runRelease() {
 	try {
 		const root = git(process.cwd(), ["rev-parse", "--show-toplevel"]);
 		if (git(root, ["status", "--porcelain", "--untracked-files=all"])) {
