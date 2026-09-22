@@ -7,9 +7,9 @@ import program from "#cli";
 import { Printer } from "#core/printer.mjs";
 
 const printer = new Printer("releases");
-const initialCommit = "[skip ci] Initialize changelog";
+const initialCommit = "Initialize changelog [skip ci]";
 const releasePattern =
-	/^\[skip ci\] Release (\d{4}\/\d{2}\/\d{2} \d{2}:\d{2})$/;
+	/^Release (\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}) \[skip ci\]$/;
 program
 	.command("releases")
 	.description("Initialize CHANGELOGS.md or generate and commit a release")
@@ -102,7 +102,7 @@ async function runRelease() {
 		}
 
 		const date = timestamp();
-		const message = `[skip ci] Release ${date}`;
+		const message = `Release ${date} [skip ci]`;
 
 		const newCommits = [];
 		for (const commit of pending) {
