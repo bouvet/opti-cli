@@ -6,16 +6,19 @@ import { confirm } from "@inquirer/prompts";
 import program from "#cli";
 import { Printer } from "#core/printer.mjs";
 
-const printer = new Printer("releases");
-const initialCommit = "Initialize changelog [skip ci]";
-const releasePattern =
+export const printer = new Printer("releases");
+export const initialCommit = "Initialize changelog [skip ci]";
+export const releasePattern =
 	/^Release (\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}) \[skip ci\]$/;
-program
+
+const baseCommand = program
 	.command("releases")
 	.description("Initialize CHANGELOGS.md or generate and commit a release")
 	.action(() => runRelease());
 
-function git(cwd, args) {
+export default baseCommand;
+
+export function git(cwd, args) {
 	return execFileSync("git", args, {
 		cwd,
 		encoding: "utf8",
@@ -23,7 +26,7 @@ function git(cwd, args) {
 	}).trim();
 }
 
-function history(root) {
+export function history(root) {
 	if (!git(root, ["rev-parse", "--revs-only", "HEAD"])) return [];
 	const fields = git(root, [
 		"log",
@@ -43,6 +46,29 @@ function timestamp() {
 	const now = new Date();
 	const pad = (value) => String(value).padStart(2, "0");
 	return `${now.getFullYear()}/${pad(now.getMonth() + 1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+export function buildMarkdown(commits, headerLabel) {
+	let markdown = "# Changelog\n\n";
+	let isFirst = true;
+	if (headerLabel) {
+		markdown += `## ${headerLabel}\n\n`;
+		isFirst = false;
+	}
+	for (const commit of commits) {
+		const release = releasePattern.exec(commit.subject);
+		if (release) {
+			// Only separate with a blank line if a prior section/bullet was already written.
+			markdown += `${isFirst ? "" : "\n"}## ${release[1]}\n\n`;
+		} else {
+			const subject = commit.subject
+				.replace(/&/g, "&amp;")
+				.replace(/[\\`*_[\]<>]/g, "\\$&");
+			markdown += `- ${subject} (${commit.hash.slice(0, 7)})\n`;
+		}
+		isFirst = false;
+	}
+	return markdown;
 }
 
 async function runRelease() {
@@ -110,18 +136,7 @@ async function runRelease() {
 			newCommits.push(commit);
 		}
 
-		let markdown = `# Changelog\n\n## ${date}\n\n`;
-		for (const commit of pending) {
-			const release = releasePattern.exec(commit.subject);
-			if (release) {
-				markdown += `\n## ${release[1]}\n\n`;
-			} else {
-				const subject = commit.subject
-					.replace(/&/g, "&amp;")
-					.replace(/[\\`*_[\]<>]/g, "\\$&");
-				markdown += `- ${subject} (${commit.hash.slice(0, 7)})\n`;
-			}
-		}
+		const markdown = buildMarkdown(pending, date);
 
 		printer.group();
 		printer.info(`Release: ${message}`);
