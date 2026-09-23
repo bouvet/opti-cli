@@ -10,11 +10,17 @@ export const printer = new Printer("releases");
 export const initialCommit = "Initialize changelog [skip ci]";
 export const releasePattern =
 	/^Release (\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}) \[skip ci\]$/;
+export const defaultReleaseBranches = ["main", "master", "develop"];
 
 const baseCommand = program
 	.command("releases")
 	.description("Initialize CHANGELOGS.md or generate and commit a release")
 	.option("-y, --yes", "Skip confirmation prompts (for pipelines)")
+	.option(
+		"-b, --branch <names...>",
+		"Branch(es) allowed to run releases on",
+		defaultReleaseBranches,
+	)
 	.action((options) => runRelease(options));
 
 export default baseCommand;
@@ -25,6 +31,26 @@ export function git(cwd, args) {
 		encoding: "utf8",
 		stdio: ["ignore", "pipe", "pipe"],
 	}).trim();
+}
+
+export function currentBranch(root) {
+	return git(root, ["rev-parse", "--abbrev-ref", "HEAD"]);
+}
+
+/**
+ * Guards against running on the wrong branch. Detached HEAD (e.g. some CI
+ * checkouts) can't be verified, so it's allowed through.
+ * @param {string} root
+ * @param {string[]} allowedBranches
+ */
+export function assertAllowedBranch(root, allowedBranches) {
+	const branch = currentBranch(root);
+	if (branch === "HEAD") return;
+	if (!allowedBranches.includes(branch)) {
+		throw new Error(
+			`Refusing to run on branch "${branch}". Allowed branches: ${allowedBranches.join(", ")}. Use --branch to override.`,
+		);
+	}
 }
 
 export function history(root) {
@@ -72,9 +98,13 @@ export function buildMarkdown(commits, headerLabel) {
 	return markdown;
 }
 
-export async function runRelease({ yes = false } = {}) {
+export async function runRelease({
+	yes = false,
+	branch = defaultReleaseBranches,
+} = {}) {
 	try {
 		const root = git(process.cwd(), ["rev-parse", "--show-toplevel"]);
+		assertAllowedBranch(root, branch);
 		if (git(root, ["status", "--porcelain", "--untracked-files=all"])) {
 			throw new Error("Commit or stash all changes before running releases.");
 		}

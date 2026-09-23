@@ -25,7 +25,7 @@ const { runRelease } = await import("./releases.mjs");
 const { runFull } = await import("./full.mjs");
 
 function initRepo(dir) {
-	execFileSync("git", ["init", "-q"], { cwd: dir });
+	execFileSync("git", ["init", "-q", "--initial-branch=master"], { cwd: dir });
 	execFileSync("git", ["config", "user.email", "t@t.com"], { cwd: dir });
 	execFileSync("git", ["config", "user.name", "t"], { cwd: dir });
 }
@@ -128,5 +128,20 @@ describe("runFull", () => {
 		expect(fs.readFileSync(changelogPath(), "utf8")).not.toBe(
 			"corrupted content",
 		);
+	});
+
+	it("refuses to run on a branch that isn't allowlisted", async () => {
+		commit(dir, "initial project commit");
+		confirmMock.mockResolvedValue(true);
+		await runRelease();
+
+		execFileSync("git", ["checkout", "-q", "-b", "feature/x"], { cwd: dir });
+		fs.writeFileSync(changelogPath(), "untouched");
+
+		await runFull({ yes: true });
+
+		expect(process.exitCode).toBe(1);
+		process.exitCode = 0;
+		expect(fs.readFileSync(changelogPath(), "utf8")).toBe("untouched");
 	});
 });

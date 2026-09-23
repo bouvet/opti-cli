@@ -3,7 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { confirm } from "@inquirer/prompts";
 import baseCommand, {
+	assertAllowedBranch,
 	buildMarkdown,
+	defaultReleaseBranches,
 	git,
 	history,
 	initialCommit,
@@ -17,11 +19,20 @@ baseCommand
 		"Regenerate CHANGELOGS.md from the full git history since initialization (recovery, no commit)",
 	)
 	.option("-y, --yes", "Skip confirmation prompt (for pipelines)")
+	.option(
+		"-b, --branch <names...>",
+		"Branch(es) allowed to run on",
+		defaultReleaseBranches,
+	)
 	.action((options) => runFull(options));
 
-export async function runFull({ yes = false } = {}) {
+export async function runFull({
+	yes = false,
+	branch = defaultReleaseBranches,
+} = {}) {
 	try {
 		const root = git(process.cwd(), ["rev-parse", "--show-toplevel"]);
+		assertAllowedBranch(root, branch);
 		const filename = path.join(root, "CHANGELOGS.md");
 		const commits = history(root);
 		const baseline = commits.findIndex(

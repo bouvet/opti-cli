@@ -25,7 +25,7 @@ const { buildMarkdown, history, releasePattern, initialCommit, runRelease } =
 	await import("./releases.mjs");
 
 function initRepo(dir) {
-	execFileSync("git", ["init", "-q"], { cwd: dir });
+	execFileSync("git", ["init", "-q", "--initial-branch=master"], { cwd: dir });
 	execFileSync("git", ["config", "user.email", "t@t.com"], { cwd: dir });
 	execFileSync("git", ["config", "user.name", "t"], { cwd: dir });
 }
@@ -165,5 +165,25 @@ describe("runRelease", () => {
 		expect(confirmMock).not.toHaveBeenCalled();
 		const content = fs.readFileSync(path.join(dir, "CHANGELOGS.md"), "utf8");
 		expect(content).toContain("feature A");
+	});
+
+	it("refuses to run on a branch that isn't allowlisted", async () => {
+		commit(dir, "initial project commit");
+		execFileSync("git", ["checkout", "-q", "-b", "feature/x"], { cwd: dir });
+
+		await runRelease({ yes: true });
+
+		expect(process.exitCode).toBe(1);
+		process.exitCode = 0;
+		expect(fs.existsSync(path.join(dir, "CHANGELOGS.md"))).toBe(false);
+	});
+
+	it("allows a non-default branch when explicitly passed via branch option", async () => {
+		commit(dir, "initial project commit");
+		execFileSync("git", ["checkout", "-q", "-b", "feature/x"], { cwd: dir });
+
+		await runRelease({ yes: true, branch: ["feature/x"] });
+
+		expect(fs.existsSync(path.join(dir, "CHANGELOGS.md"))).toBe(true);
 	});
 });
