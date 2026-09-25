@@ -56,6 +56,15 @@ describe("buildMarkdown", () => {
 		expect(markdown).toContain("Fix \\*bold\\* bug (abcdef1)");
 		expect(markdown).toContain("## 2024/01/01 12:00");
 	});
+
+	it("strips the Azure DevOps 'Merged PR <n>: ' prefix", () => {
+		const commits = [
+			{ hash: "2a0f2951234567", subject: "Merged PR 23431: 39044: Chatblock" },
+		];
+		const markdown = buildMarkdown(commits, null);
+		expect(markdown).toContain("- 39044: Chatblock (2a0f295)");
+		expect(markdown).not.toContain("Merged PR");
+	});
 });
 
 describe("history / git", () => {

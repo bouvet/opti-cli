@@ -11,6 +11,12 @@ export const initialCommit = "Initialize changelog [skip ci]";
 export const releasePattern =
 	/^Release (\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}) \[skip ci\]$/;
 export const defaultReleaseBranches = ["main", "master", "develop"];
+const mergedPrPrefix = /^Merged PR \d+:\s*/;
+
+/** Removes the "Merged PR <n>: " prefix Azure DevOps adds to merge commits. */
+export function cleanSubject(subject) {
+	return subject.replace(mergedPrPrefix, "");
+}
 
 const baseCommand = program
 	.command("releases")
@@ -88,7 +94,7 @@ export function buildMarkdown(commits, headerLabel) {
 			// Only separate with a blank line if a prior section/bullet was already written.
 			markdown += `${isFirst ? "" : "\n"}## ${release[1]}\n\n`;
 		} else {
-			const subject = commit.subject
+			const subject = cleanSubject(commit.subject)
 				.replace(/&/g, "&amp;")
 				.replace(/[\\`*_[\]<>]/g, "\\$&");
 			markdown += `- ${subject} (${commit.hash.slice(0, 7)})\n`;
@@ -175,7 +181,9 @@ export async function runRelease({
 		printer.info(`Release: ${message}`);
 		printer.neutral(`Commits included (${newCommits.length}):`);
 		for (const commit of newCommits) {
-			printer.neutral(`  - ${commit.subject} (${commit.hash.slice(0, 7)})`);
+			printer.neutral(
+				`  - ${cleanSubject(commit.subject)} (${commit.hash.slice(0, 7)})`,
+			);
 		}
 		printer.group();
 
