@@ -10,6 +10,7 @@ import baseCommand, {
 	defaultReleaseBranches,
 	git,
 	printer,
+	releasePattern,
 } from "./releases.mjs";
 
 baseCommand
@@ -19,7 +20,7 @@ baseCommand
 	)
 	.option(
 		"-b, --branch <names...>",
-		"Branch(es) allowed to run on",
+		"Branch(es) allowed to run releases on",
 		defaultReleaseBranches,
 	)
 	.action((options) => runFull(options));
@@ -42,11 +43,18 @@ export async function runFull({ branch = defaultReleaseBranches } = {}) {
 
 		// Unreleased commits are intentionally left out.
 		const { released } = changelog;
+		const releaseCount = released.filter((commit) =>
+			releasePattern.test(commit.subject),
+		).length;
+		if (!releaseCount) {
+			printer.info("No releases found yet. Nothing to rebuild.");
+			return;
+		}
 		const markdown = buildMarkdown(released, null);
 
 		printer.group();
 		printer.info(
-			`Will rebuild ${changelogFileName} from ${released.length} released commit(s) since initialization.`,
+			`Will rebuild ${changelogFileName} from ${releaseCount} release(s) and ${released.length - releaseCount} commit(s).`,
 		);
 		printer.neutral("This does not create a commit.");
 		printer.group();

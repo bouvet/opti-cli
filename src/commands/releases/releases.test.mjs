@@ -161,10 +161,39 @@ describe("runRelease", () => {
 		expect(confirmMock).toHaveBeenCalledTimes(1);
 	});
 
+	it("refuses to re-initialize when the file was deleted after initialization", async () => {
+		commit(dir, "initial project commit");
+		confirmMock.mockResolvedValue(true);
+		await runRelease();
+		confirmMock.mockClear();
+
+		fs.rmSync(path.join(dir, changelogFileName));
+		execFileSync("git", ["commit", "-q", "-am", "oops"], { cwd: dir });
+
+		await runRelease();
+
+		expect(process.exitCode).toBe(1);
+		process.exitCode = 0;
+		expect(confirmMock).not.toHaveBeenCalled();
+		expect(fs.existsSync(path.join(dir, changelogFileName))).toBe(false);
+	});
+
 	it("refuses to run on a branch that isn't allowlisted", async () => {
 		commit(dir, "initial project commit");
 		confirmMock.mockResolvedValue(true);
 		execFileSync("git", ["checkout", "-q", "-b", "feature/x"], { cwd: dir });
+
+		await runRelease();
+
+		expect(process.exitCode).toBe(1);
+		process.exitCode = 0;
+		expect(fs.existsSync(path.join(dir, changelogFileName))).toBe(false);
+	});
+
+	it("refuses to run on a detached HEAD", async () => {
+		commit(dir, "initial project commit");
+		confirmMock.mockResolvedValue(true);
+		execFileSync("git", ["checkout", "-q", "--detach"], { cwd: dir });
 
 		await runRelease();
 

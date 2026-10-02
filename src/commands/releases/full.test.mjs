@@ -87,12 +87,28 @@ describe("runFull", () => {
 		commit(dir, "initial project commit");
 		confirmMock.mockResolvedValue(true);
 		await runRelease();
+		commit(dir, "feature A");
+		await runRelease();
 
 		fs.writeFileSync(changelogPath(), "untouched");
 		confirmMock.mockResolvedValue(false);
 
 		await runFull();
 
+		expect(fs.readFileSync(changelogPath(), "utf8")).toBe("untouched");
+	});
+
+	it("leaves the file alone when there are no releases yet", async () => {
+		commit(dir, "initial project commit");
+		confirmMock.mockResolvedValue(true);
+		await runRelease();
+		commit(dir, "unreleased work");
+		confirmMock.mockClear();
+
+		fs.writeFileSync(changelogPath(), "untouched");
+		await runFull();
+
+		expect(confirmMock).not.toHaveBeenCalled();
 		expect(fs.readFileSync(changelogPath(), "utf8")).toBe("untouched");
 	});
 

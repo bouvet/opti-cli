@@ -15,7 +15,7 @@ export const defaultReleaseBranches = ["main", "master", "develop"];
 const mergedPrPrefix = /^Merged PR \d+:\s*/;
 
 /** Removes the "Merged PR <n>: " prefix Azure DevOps adds to merge commits. */
-export function cleanSubject(subject) {
+function cleanSubject(subject) {
 	return subject.replace(mergedPrPrefix, "");
 }
 
@@ -41,19 +41,17 @@ export function git(cwd, args) {
 	}).trim();
 }
 
-export function currentBranch(root) {
+function currentBranch(root) {
 	return git(root, ["rev-parse", "--abbrev-ref", "HEAD"]);
 }
 
 /**
- * Guards against running on the wrong branch. Detached HEAD (e.g. some CI
- * checkouts) can't be verified, so it's allowed through.
+ * Guards against running on the wrong branch.
  * @param {string} root
  * @param {string[]} allowedBranches
  */
 export function assertAllowedBranch(root, allowedBranches) {
 	const branch = currentBranch(root);
-	if (branch === "HEAD") return;
 	if (!allowedBranches.includes(branch)) {
 		throw new Error(
 			`Refusing to run on branch "${branch}". Allowed branches: ${allowedBranches.join(", ")}. Use --branch to override.`,
@@ -173,6 +171,11 @@ export async function runRelease({ branch = defaultReleaseBranches } = {}) {
 		const changelog = changelogCommits(root);
 
 		if (!fs.existsSync(filename)) {
+			if (changelog) {
+				throw new Error(
+					`${changelogFileName} is missing but was initialized before. Run 'opti releases full' to restore it.`,
+				);
+			}
 			printer.info(`No ${changelogFileName} found in this repository.`);
 			printer.neutral(`Will create ${changelogFileName} with commit:`);
 			printer.neutral(`  ${initialCommit}`);
