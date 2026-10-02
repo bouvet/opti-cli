@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { confirm } from "@inquirer/prompts";
 import program from "#cli";
+import { changelogFileName } from "#core/constants.js";
 import { Printer } from "#core/printer.mjs";
 
 export const printer = new Printer("releases");
@@ -20,7 +21,9 @@ export function cleanSubject(subject) {
 
 const baseCommand = program
 	.command("releases")
-	.description("Initialize CHANGELOGS.md or generate and commit a release")
+	.description(
+		`Initialize ${changelogFileName} or generate and commit a release`,
+	)
 	.option(
 		"-b, --branch <names...>",
 		"Branch(es) allowed to run releases on",
@@ -166,17 +169,17 @@ export async function runRelease({ branch = defaultReleaseBranches } = {}) {
 		if (git(root, ["status", "--porcelain", "--untracked-files=all"])) {
 			throw new Error("Commit or stash all changes before running releases.");
 		}
-		const filename = path.join(root, "CHANGELOGS.md");
+		const filename = path.join(root, changelogFileName);
 		const changelog = changelogCommits(root);
 
 		if (!fs.existsSync(filename)) {
-			printer.info("No CHANGELOGS.md found in this repository.");
-			printer.neutral("Will create CHANGELOGS.md with commit:");
+			printer.info(`No ${changelogFileName} found in this repository.`);
+			printer.neutral(`Will create ${changelogFileName} with commit:`);
 			printer.neutral(`  ${initialCommit}`);
 			printer.group();
 
 			const shouldCommit = await confirm({
-				message: "Do you want to initialize and commit CHANGELOGS.md?",
+				message: `Do you want to initialize and commit ${changelogFileName}?`,
 				default: false,
 			});
 
@@ -186,14 +189,14 @@ export async function runRelease({ branch = defaultReleaseBranches } = {}) {
 			}
 
 			fs.writeFileSync(filename, "# Changelog\n", { flag: "wx" });
-			git(root, ["add", "--", "CHANGELOGS.md"]);
+			git(root, ["add", "--", changelogFileName]);
 			git(root, [
 				"commit",
 				"--only",
 				"-m",
 				initialCommit,
 				"--",
-				"CHANGELOGS.md",
+				changelogFileName,
 			]);
 			printer.success(initialCommit);
 			return;
@@ -201,7 +204,7 @@ export async function runRelease({ branch = defaultReleaseBranches } = {}) {
 
 		if (!changelog) {
 			throw new Error(
-				"CHANGELOGS.md exists without an initialization commit; it will not be overwritten.",
+				`${changelogFileName} exists without an initialization commit; it will not be overwritten.`,
 			);
 		}
 		const { unreleased: newCommits, released } = changelog;
@@ -210,7 +213,7 @@ export async function runRelease({ branch = defaultReleaseBranches } = {}) {
 			return;
 		}
 		if (!fs.lstatSync(filename).isFile()) {
-			throw new Error("CHANGELOGS.md must be a regular file.");
+			throw new Error(`${changelogFileName} must be a regular file.`);
 		}
 
 		const date = timestamp();
@@ -239,8 +242,8 @@ export async function runRelease({ branch = defaultReleaseBranches } = {}) {
 		}
 
 		fs.writeFileSync(filename, markdown);
-		git(root, ["add", "--", "CHANGELOGS.md"]);
-		git(root, ["commit", "--only", "-m", message, "--", "CHANGELOGS.md"]);
+		git(root, ["add", "--", changelogFileName]);
+		git(root, ["commit", "--only", "-m", message, "--", changelogFileName]);
 		printer.success(message);
 	} catch (error) {
 		if (error instanceof Error && error.name === "ExitPromptError") {

@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { changelogFileName } from "#core/constants.js";
 
 // releases.mjs calls program.command(...) at import time, so #cli must be
 // stubbed before the module under test is imported.
@@ -117,7 +118,7 @@ describe("runRelease", () => {
 
 		await runRelease();
 
-		expect(fs.existsSync(path.join(dir, "CHANGELOGS.md"))).toBe(true);
+		expect(fs.existsSync(path.join(dir, changelogFileName))).toBe(true);
 		const commits = history(dir);
 		expect(commits[0].subject).toBe(initialCommit);
 	});
@@ -128,7 +129,7 @@ describe("runRelease", () => {
 
 		await runRelease();
 
-		expect(fs.existsSync(path.join(dir, "CHANGELOGS.md"))).toBe(false);
+		expect(fs.existsSync(path.join(dir, changelogFileName))).toBe(false);
 	});
 
 	it("commits a new release entry with pending commits", async () => {
@@ -142,7 +143,7 @@ describe("runRelease", () => {
 
 		await runRelease();
 
-		const content = fs.readFileSync(path.join(dir, "CHANGELOGS.md"), "utf8");
+		const content = fs.readFileSync(path.join(dir, changelogFileName), "utf8");
 		expect(content).toContain("feature A");
 		expect(content).toContain("feature B");
 
@@ -169,7 +170,7 @@ describe("runRelease", () => {
 
 		expect(process.exitCode).toBe(1);
 		process.exitCode = 0;
-		expect(fs.existsSync(path.join(dir, "CHANGELOGS.md"))).toBe(false);
+		expect(fs.existsSync(path.join(dir, changelogFileName))).toBe(false);
 	});
 
 	it("allows a non-default branch when explicitly passed via branch option", async () => {
@@ -179,6 +180,6 @@ describe("runRelease", () => {
 
 		await runRelease({ branch: ["feature/x"] });
 
-		expect(fs.existsSync(path.join(dir, "CHANGELOGS.md"))).toBe(true);
+		expect(fs.existsSync(path.join(dir, changelogFileName))).toBe(true);
 	});
 });

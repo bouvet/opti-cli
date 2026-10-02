@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { confirm } from "@inquirer/prompts";
+import { changelogFileName } from "#core/constants.js";
 import baseCommand, {
 	assertAllowedBranch,
 	buildMarkdown,
@@ -14,7 +15,7 @@ import baseCommand, {
 baseCommand
 	.command("full")
 	.description(
-		"Regenerate CHANGELOGS.md from the full git history since initialization (recovery, no commit)",
+		`Regenerate ${changelogFileName} from the full git history since initialization (recovery, no commit)`,
 	)
 	.option(
 		"-b, --branch <names...>",
@@ -27,16 +28,16 @@ export async function runFull({ branch = defaultReleaseBranches } = {}) {
 	try {
 		const root = git(process.cwd(), ["rev-parse", "--show-toplevel"]);
 		assertAllowedBranch(root, branch);
-		const filename = path.join(root, "CHANGELOGS.md");
+		const filename = path.join(root, changelogFileName);
 		const changelog = changelogCommits(root);
 
 		if (!changelog) {
 			throw new Error(
-				"No initialization commit found; run 'releases' first to initialize CHANGELOGS.md.",
+				`No initialization commit found; run 'releases' first to initialize ${changelogFileName}.`,
 			);
 		}
 		if (fs.existsSync(filename) && !fs.lstatSync(filename).isFile()) {
-			throw new Error("CHANGELOGS.md must be a regular file.");
+			throw new Error(`${changelogFileName} must be a regular file.`);
 		}
 
 		// Unreleased commits are intentionally left out.
@@ -45,13 +46,13 @@ export async function runFull({ branch = defaultReleaseBranches } = {}) {
 
 		printer.group();
 		printer.info(
-			`Will rebuild CHANGELOGS.md from ${released.length} released commit(s) since initialization.`,
+			`Will rebuild ${changelogFileName} from ${released.length} released commit(s) since initialization.`,
 		);
 		printer.neutral("This does not create a commit.");
 		printer.group();
 
 		const shouldWrite = await confirm({
-			message: "Do you want to overwrite CHANGELOGS.md with the full log?",
+			message: `Do you want to overwrite ${changelogFileName} with the full log?`,
 			default: false,
 		});
 
@@ -61,7 +62,9 @@ export async function runFull({ branch = defaultReleaseBranches } = {}) {
 		}
 
 		fs.writeFileSync(filename, markdown);
-		printer.success("CHANGELOGS.md has been regenerated from git history.");
+		printer.success(
+			`${changelogFileName} has been regenerated from git history.`,
+		);
 	} catch (error) {
 		if (error instanceof Error && error.name === "ExitPromptError") {
 			printer.info("bye! 👋");

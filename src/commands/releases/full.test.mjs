@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { changelogFileName } from "#core/constants.js";
 
 // releases.mjs (imported by full.mjs) calls program.command(...) at import
 // time, so #cli must be stubbed before the module under test is imported.
@@ -39,7 +40,7 @@ function commit(dir, message) {
 describe("runFull", () => {
 	let dir;
 	let cwdSpy;
-	const changelogPath = () => path.join(dir, "CHANGELOGS.md");
+	const changelogPath = () => path.join(dir, changelogFileName);
 
 	beforeEach(() => {
 		dir = fs.mkdtempSync(path.join(os.tmpdir(), "opti-cli-test-"));
