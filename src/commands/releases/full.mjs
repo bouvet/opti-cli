@@ -5,12 +5,10 @@ import { confirm } from "@inquirer/prompts";
 import baseCommand, {
 	assertAllowedBranch,
 	buildMarkdown,
+	changelogCommits,
 	defaultReleaseBranches,
 	git,
-	history,
-	initialCommit,
 	printer,
-	releasePattern,
 } from "./releases.mjs";
 
 baseCommand
@@ -34,12 +32,9 @@ export async function runFull({
 		const root = git(process.cwd(), ["rev-parse", "--show-toplevel"]);
 		assertAllowedBranch(root, branch);
 		const filename = path.join(root, "CHANGELOGS.md");
-		const commits = history(root);
-		const baseline = commits.findIndex(
-			(commit) => commit.subject === initialCommit,
-		);
+		const changelog = changelogCommits(root);
 
-		if (baseline === -1) {
+		if (!changelog) {
 			throw new Error(
 				"No initialization commit found; run 'releases' first to initialize CHANGELOGS.md.",
 			);
@@ -48,13 +43,8 @@ export async function runFull({
 			throw new Error("CHANGELOGS.md must be a regular file.");
 		}
 
-		const pending = commits.slice(0, baseline);
-		const firstReleaseIndex = pending.findIndex((commit) =>
-			releasePattern.test(commit.subject),
-		);
-		// Drop any commits made since the latest release; only rebuild what was actually released.
-		const released =
-			firstReleaseIndex === -1 ? [] : pending.slice(firstReleaseIndex);
+		// Unreleased commits are intentionally left out.
+		const { released } = changelog;
 		const markdown = buildMarkdown(released, null);
 
 		printer.group();

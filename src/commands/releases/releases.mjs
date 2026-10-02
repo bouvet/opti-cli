@@ -59,20 +59,76 @@ export function assertAllowedBranch(root, allowedBranches) {
 	}
 }
 
-export function history(root) {
+export function history(root, { firstParent = true, range = ["HEAD"] } = {}) {
 	if (!git(root, ["rev-parse", "--revs-only", "HEAD"])) return [];
 	const fields = git(root, [
 		"log",
-		"--first-parent",
+		firstParent ? "--first-parent" : "--topo-order",
 		"--format=%H%x00%s",
 		"-z",
-		"HEAD",
+		...range,
+		"--",
 	]).split("\0");
 	const commits = [];
 	for (let index = 0; index < fields.length - 1; index += 2) {
 		commits.push({ hash: fields[index], subject: fields[index + 1] });
 	}
 	return commits;
+}
+
+const isInit = (subject) => cleanSubject(subject) === initialCommit;
+const releaseDate = (subject) =>
+	releasePattern.exec(cleanSubject(subject))?.[1];
+// Git's auto-generated merge subjects; "Merged PR n:" (Azure DevOps) is not matched.
+const isPlainMerge = (subject) =>
+	/^Merge (remote-tracking branch|branch|tag|pull request) /.test(subject);
+
+/**
+ * Commits since initialization, newest first, split into unreleased and released.
+ * `released` contains release marker commits followed by their entries (the flat
+ * shape `buildMarkdown` expects). Returns null if there is no initialization commit.
+ */
+export function changelogCommits(root) {
+	// Markers can sit on a merged side branch (e.g. Azure DevOps PRs), so search all ancestors.
+	const init = history(root, { firstParent: false }).find((commit) =>
+		isInit(commit.subject),
+	);
+	if (!init) return null;
+
+	const releases = [];
+	const seenDates = new Set();
+	for (const commit of history(root, {
+		firstParent: false,
+		range: ["HEAD", `^${init.hash}`],
+	})) {
+		const date = releaseDate(commit.subject);
+		// A PR merge and the release commit it brings in share a date; keep the newest.
+		if (date && !seenDates.has(date)) {
+			seenDates.add(date);
+			releases.push({ ...commit, date });
+		}
+	}
+
+	const entries = (tip, base) =>
+		history(root, { range: [tip, `^${base}`] }).filter(
+			(commit) =>
+				!isInit(commit.subject) &&
+				!releaseDate(commit.subject) &&
+				!isPlainMerge(commit.subject),
+		);
+
+	const unreleased = entries("HEAD", releases[0]?.hash ?? init.hash);
+	const released = [];
+	releases.forEach((release, index) => {
+		released.push({
+			hash: release.hash,
+			subject: `Release ${release.date} [skip ci]`,
+		});
+		released.push(
+			...entries(release.hash, releases[index + 1]?.hash ?? init.hash),
+		);
+	});
+	return { unreleased, released };
 }
 
 function timestamp() {
@@ -115,10 +171,7 @@ export async function runRelease({
 			throw new Error("Commit or stash all changes before running releases.");
 		}
 		const filename = path.join(root, "CHANGELOGS.md");
-		const commits = history(root);
-		const baseline = commits.findIndex(
-			(commit) => commit.subject === initialCommit,
-		);
+		const changelog = changelogCommits(root);
 
 		if (!fs.existsSync(filename)) {
 			printer.info("No CHANGELOGS.md found in this repository.");
@@ -152,13 +205,13 @@ export async function runRelease({
 			return;
 		}
 
-		if (baseline === -1) {
+		if (!changelog) {
 			throw new Error(
 				"CHANGELOGS.md exists without an initialization commit; it will not be overwritten.",
 			);
 		}
-		const pending = commits.slice(0, baseline);
-		if (!pending.length || releasePattern.test(pending[0].subject)) {
+		const { unreleased: newCommits, released } = changelog;
+		if (!newCommits.length) {
 			printer.info("No new commits to release.");
 			return;
 		}
@@ -169,13 +222,7 @@ export async function runRelease({
 		const date = timestamp();
 		const message = `Release ${date} [skip ci]`;
 
-		const newCommits = [];
-		for (const commit of pending) {
-			if (releasePattern.test(commit.subject)) break;
-			newCommits.push(commit);
-		}
-
-		const markdown = buildMarkdown(pending, date);
+		const markdown = buildMarkdown([...newCommits, ...released], date);
 
 		printer.group();
 		printer.info(`Release: ${message}`);

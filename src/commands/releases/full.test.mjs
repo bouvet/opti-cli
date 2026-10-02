@@ -144,4 +144,74 @@ describe("runFull", () => {
 		process.exitCode = 0;
 		expect(fs.readFileSync(changelogPath(), "utf8")).toBe("untouched");
 	});
+
+	it("skips plain git merge commits but keeps 'Merged PR' entries", async () => {
+		commit(dir, "initial project commit");
+		await runRelease({ yes: true });
+
+		commit(dir, "feature A");
+		const git = (...args) => execFileSync("git", args, { cwd: dir });
+		git(
+			"commit",
+			"-q",
+			"--allow-empty",
+			"-m",
+			"Merge remote-tracking branch 'origin/master' into develop",
+		);
+		git("commit", "-q", "--allow-empty", "-m", "Merged PR 7: feature B");
+		await runRelease({ yes: true });
+
+		fs.writeFileSync(changelogPath(), "corrupted content");
+		await runFull({ yes: true });
+
+		const content = fs.readFileSync(changelogPath(), "utf8");
+		expect(content).toContain("feature A");
+		expect(content).toContain("- feature B");
+		expect(content).not.toContain("Merge remote-tracking");
+	});
+
+	// Mirrors Azure DevOps: markers are committed on a branch and merged via PR.
+	async function runOnBranchAndMerge(branch, action, { squash = false } = {}) {
+		const git = (...args) =>
+			execFileSync("git", args, { cwd: dir, encoding: "utf8" }).trim();
+		git("checkout", "-q", "-b", branch);
+		await action();
+		git("checkout", "-q", "master");
+		const message = `Merged PR 1: ${git("log", "-1", "--format=%s", branch)}`;
+		if (squash) {
+			git("merge", "-q", "--squash", branch);
+			git("commit", "-q", "-m", message);
+		} else {
+			git("merge", "-q", "--no-ff", "-m", message, branch);
+		}
+	}
+
+	it.each([
+		["merge commits", false],
+		["squash merges", true],
+	])("finds init and release markers brought in via %s", async (_, squash) => {
+		commit(dir, "initial project commit");
+		await runOnBranchAndMerge(
+			"init",
+			() => runRelease({ yes: true, branch: ["init"] }),
+			{ squash },
+		);
+
+		commit(dir, "feature A");
+		await runOnBranchAndMerge(
+			"release",
+			() => runRelease({ yes: true, branch: ["release"] }),
+			{ squash },
+		);
+		commit(dir, "unreleased work");
+
+		fs.writeFileSync(changelogPath(), "corrupted content");
+		await runFull({ yes: true });
+
+		expect(process.exitCode ?? 0).toBe(0);
+		const content = fs.readFileSync(changelogPath(), "utf8");
+		expect(content).toMatch(
+			/^# Changelog\n\n## \d{4}\/\d{2}\/\d{2} \d{2}:\d{2}\n\n- feature A \([0-9a-f]{7}\)\n$/,
+		);
+	});
 });
