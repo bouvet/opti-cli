@@ -21,7 +21,6 @@ export function cleanSubject(subject) {
 const baseCommand = program
 	.command("releases")
 	.description("Initialize CHANGELOGS.md or generate and commit a release")
-	.option("-y, --yes", "Skip confirmation prompts (for pipelines)")
 	.option(
 		"-b, --branch <names...>",
 		"Branch(es) allowed to run releases on",
@@ -160,10 +159,7 @@ export function buildMarkdown(commits, headerLabel) {
 	return markdown;
 }
 
-export async function runRelease({
-	yes = false,
-	branch = defaultReleaseBranches,
-} = {}) {
+export async function runRelease({ branch = defaultReleaseBranches } = {}) {
 	try {
 		const root = git(process.cwd(), ["rev-parse", "--show-toplevel"]);
 		assertAllowedBranch(root, branch);
@@ -179,12 +175,10 @@ export async function runRelease({
 			printer.neutral(`  ${initialCommit}`);
 			printer.group();
 
-			const shouldCommit =
-				yes ||
-				(await confirm({
-					message: "Do you want to initialize and commit CHANGELOGS.md?",
-					default: false,
-				}));
+			const shouldCommit = await confirm({
+				message: "Do you want to initialize and commit CHANGELOGS.md?",
+				default: false,
+			});
 
 			if (!shouldCommit) {
 				printer.info("Aborted. No changes were made.");
@@ -234,12 +228,10 @@ export async function runRelease({
 		}
 		printer.group();
 
-		const shouldCommit =
-			yes ||
-			(await confirm({
-				message: "Do you want to commit this release?",
-				default: false,
-			}));
+		const shouldCommit = await confirm({
+			message: "Do you want to commit this release?",
+			default: false,
+		});
 
 		if (!shouldCommit) {
 			printer.info("Release aborted. No changes were committed.");

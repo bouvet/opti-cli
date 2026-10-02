@@ -160,27 +160,12 @@ describe("runRelease", () => {
 		expect(confirmMock).toHaveBeenCalledTimes(1);
 	});
 
-	it("skips the confirmation prompt when yes is passed", async () => {
-		commit(dir, "initial project commit");
-
-		await runRelease({ yes: true });
-
-		expect(confirmMock).not.toHaveBeenCalled();
-		expect(fs.existsSync(path.join(dir, "CHANGELOGS.md"))).toBe(true);
-
-		commit(dir, "feature A");
-		await runRelease({ yes: true });
-
-		expect(confirmMock).not.toHaveBeenCalled();
-		const content = fs.readFileSync(path.join(dir, "CHANGELOGS.md"), "utf8");
-		expect(content).toContain("feature A");
-	});
-
 	it("refuses to run on a branch that isn't allowlisted", async () => {
 		commit(dir, "initial project commit");
+		confirmMock.mockResolvedValue(true);
 		execFileSync("git", ["checkout", "-q", "-b", "feature/x"], { cwd: dir });
 
-		await runRelease({ yes: true });
+		await runRelease();
 
 		expect(process.exitCode).toBe(1);
 		process.exitCode = 0;
@@ -189,9 +174,10 @@ describe("runRelease", () => {
 
 	it("allows a non-default branch when explicitly passed via branch option", async () => {
 		commit(dir, "initial project commit");
+		confirmMock.mockResolvedValue(true);
 		execFileSync("git", ["checkout", "-q", "-b", "feature/x"], { cwd: dir });
 
-		await runRelease({ yes: true, branch: ["feature/x"] });
+		await runRelease({ branch: ["feature/x"] });
 
 		expect(fs.existsSync(path.join(dir, "CHANGELOGS.md"))).toBe(true);
 	});

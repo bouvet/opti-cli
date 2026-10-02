@@ -16,7 +16,6 @@ baseCommand
 	.description(
 		"Regenerate CHANGELOGS.md from the full git history since initialization (recovery, no commit)",
 	)
-	.option("-y, --yes", "Skip confirmation prompt (for pipelines)")
 	.option(
 		"-b, --branch <names...>",
 		"Branch(es) allowed to run on",
@@ -24,10 +23,7 @@ baseCommand
 	)
 	.action((options) => runFull(options));
 
-export async function runFull({
-	yes = false,
-	branch = defaultReleaseBranches,
-} = {}) {
+export async function runFull({ branch = defaultReleaseBranches } = {}) {
 	try {
 		const root = git(process.cwd(), ["rev-parse", "--show-toplevel"]);
 		assertAllowedBranch(root, branch);
@@ -54,12 +50,10 @@ export async function runFull({
 		printer.neutral("This does not create a commit.");
 		printer.group();
 
-		const shouldWrite =
-			yes ||
-			(await confirm({
-				message: "Do you want to overwrite CHANGELOGS.md with the full log?",
-				default: false,
-			}));
+		const shouldWrite = await confirm({
+			message: "Do you want to overwrite CHANGELOGS.md with the full log?",
+			default: false,
+		});
 
 		if (!shouldWrite) {
 			printer.info("Aborted. No changes were made.");

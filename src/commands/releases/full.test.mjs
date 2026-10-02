@@ -114,22 +114,6 @@ describe("runFull", () => {
 		expect(content).not.toContain("unreleased work in progress");
 	});
 
-	it("skips the confirmation prompt when yes is passed", async () => {
-		commit(dir, "initial project commit");
-		confirmMock.mockResolvedValue(true);
-		await runRelease();
-		confirmMock.mockClear();
-
-		fs.writeFileSync(changelogPath(), "corrupted content");
-
-		await runFull({ yes: true });
-
-		expect(confirmMock).not.toHaveBeenCalled();
-		expect(fs.readFileSync(changelogPath(), "utf8")).not.toBe(
-			"corrupted content",
-		);
-	});
-
 	it("refuses to run on a branch that isn't allowlisted", async () => {
 		commit(dir, "initial project commit");
 		confirmMock.mockResolvedValue(true);
@@ -138,7 +122,7 @@ describe("runFull", () => {
 		execFileSync("git", ["checkout", "-q", "-b", "feature/x"], { cwd: dir });
 		fs.writeFileSync(changelogPath(), "untouched");
 
-		await runFull({ yes: true });
+		await runFull();
 
 		expect(process.exitCode).toBe(1);
 		process.exitCode = 0;
@@ -147,7 +131,8 @@ describe("runFull", () => {
 
 	it("skips plain git merge commits but keeps 'Merged PR' entries", async () => {
 		commit(dir, "initial project commit");
-		await runRelease({ yes: true });
+		confirmMock.mockResolvedValue(true);
+		await runRelease();
 
 		commit(dir, "feature A");
 		const git = (...args) => execFileSync("git", args, { cwd: dir });
@@ -159,10 +144,10 @@ describe("runFull", () => {
 			"Merge remote-tracking branch 'origin/master' into develop",
 		);
 		git("commit", "-q", "--allow-empty", "-m", "Merged PR 7: feature B");
-		await runRelease({ yes: true });
+		await runRelease();
 
 		fs.writeFileSync(changelogPath(), "corrupted content");
-		await runFull({ yes: true });
+		await runFull();
 
 		const content = fs.readFileSync(changelogPath(), "utf8");
 		expect(content).toContain("feature A");
@@ -190,23 +175,22 @@ describe("runFull", () => {
 		["merge commits", false],
 		["squash merges", true],
 	])("finds init and release markers brought in via %s", async (_, squash) => {
+		confirmMock.mockResolvedValue(true);
 		commit(dir, "initial project commit");
-		await runOnBranchAndMerge(
-			"init",
-			() => runRelease({ yes: true, branch: ["init"] }),
-			{ squash },
-		);
+		await runOnBranchAndMerge("init", () => runRelease({ branch: ["init"] }), {
+			squash,
+		});
 
 		commit(dir, "feature A");
 		await runOnBranchAndMerge(
 			"release",
-			() => runRelease({ yes: true, branch: ["release"] }),
+			() => runRelease({ branch: ["release"] }),
 			{ squash },
 		);
 		commit(dir, "unreleased work");
 
 		fs.writeFileSync(changelogPath(), "corrupted content");
-		await runFull({ yes: true });
+		await runFull();
 
 		expect(process.exitCode ?? 0).toBe(0);
 		const content = fs.readFileSync(changelogPath(), "utf8");
