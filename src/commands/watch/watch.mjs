@@ -2,6 +2,7 @@
 
 import fs from "node:fs";
 import { select } from "@inquirer/prompts";
+import { Option } from "commander";
 import program from "#cli";
 import checkDotnetExists from "#core/prereq/checks/dotnet.mjs";
 import { Printer } from "#core/printer.mjs";
@@ -24,8 +25,25 @@ program
 		"-d --default",
 		"Prompt for a profile and save the selection as the new default for future runs",
 	)
+	.addOption(
+		new Option(
+			"-r --reset",
+			"Clear the saved default launch profile",
+		).conflicts(["profile", "default"]),
+	)
 	.action(async (options) => {
-		const { profile, default: defaultProfile } = options;
+		const { profile, default: defaultProfile, reset } = options;
+
+		if (reset) {
+			if (!process.opti.env?.DEFAULT_PROFILE) {
+				printer.info("No default profile is set. Nothing to clear");
+				return;
+			}
+
+			await setDefaultProfile("");
+			printer.success("Default launch profile cleared!");
+			return;
+		}
 
 		await docker.ensureDbIsRunning();
 
