@@ -82,11 +82,12 @@ $ opti db apply # re-apply connection string to appsettings
 ```
 
 ### Running app with different launch profiles
-If you have a lot of profiles in launchSettings.json, `opti watch` lets you pick between them. Use the `-d` flag to pin picked option as default to run in the future.
+If you have a lot of profiles in launchSettings.json, `opti watch` lets you pick between them. Use the `-d` flag to pin picked option as default to run in the future. Use the `-r` flag to reset the default.
 ```bash
 $ opti watch
 $ opti watch --default # use selected profile as default
 $ opti watch --profile <profile> # use this profile bypassing the wizard and default
+$ opti watch --reset # resets the default launch profile 
 ```
 
 ### Completely clean project build
