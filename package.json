@@ -17,6 +17,8 @@
 		"publish:jsr": "npx jsr publish",
 		"lint": "pnpm biome check --write",
 		"lint:check": "pnpm biome check --files-ignore-unknown=true --no-errors-on-unmatched",
+		"test": "vitest run",
+		"test:watch": "vitest",
 		"prepare": "husky"
 	},
 	"lint-staged": {
@@ -48,7 +50,8 @@
 		"husky": "9.1.7",
 		"lint-staged": "17.5.1",
 		"prettier": "3.4.2",
-		"prettier-eslint": "16.4.2"
+		"prettier-eslint": "16.4.2",
+		"vitest": "^5.0.1"
 	},
 	"volta": {
 		"node": "22.14.0"
